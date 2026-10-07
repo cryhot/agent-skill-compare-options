@@ -22,6 +22,18 @@ sort and reorder criteria, hide marks or criteria, open the details of any ratin
 and export the view as markdown or as an artifact.
 
 
+## Demo
+
+Asked which tools could compare options for us, Claude with this skill produced this table
+([open the artifact](https://claude.ai/artifact/TMXFyf9sCnC1FV79GokGcc "interactive table, published as a Claude artifact"),
+or read [the whole conversation](https://claude.ai/share/e19f0850-5a79-49b1-82a1-7999eec2401a "shared Claude conversation")):
+
+[![A comparison table of tools for comparing options, with its legend, sorted columns and the details of one rating](demo/tools-for-comparing-options.png)](https://cryhot.github.io/agent-skill-compare-options/demo/tools-for-comparing-options.html "open the inline widget")
+_The inline widget, as shown in the Claude app.
+Open [the widget itself](https://cryhot.github.io/agent-skill-compare-options/demo/tools-for-comparing-options.html), as downloaded from the conversation._
+
+
+
 ## Install
 
 Clone it into the skills directory of your agent, as `compare-options`: the directory name must match the skill's name.
@@ -68,6 +80,17 @@ On [claude.ai](https://claude.ai), upload the zip of the latest release again.
 - [`assets/compare-table.html`](assets/compare-table.html): the interactive table template, a wrapper for the data.
 - [`assets/compare-table.js`](assets/compare-table.js): the interactive table itself, which the template loads from jsDelivr.
 - [`assets/compare-table.md`](assets/compare-table.md): its data format, and what the user can do with it.
+- [`demo/`](demo/): a demo of the interactive table, left out of the release zip.
+
+
+## Development
+
+Serve the repository, then open <http://localhost:8000/demo/>:
+```sh
+python3 -m http.server 8000
+```
+The demo renders [`demo/data.js`](demo/data.js) with your local [`assets/compare-table.js`](assets/compare-table.js): reload it after each change.
+Add `?widget` to its address to print the prompts the action buttons send, or `?table=1` to load the latest release instead.
 
 
 ## Known limitations

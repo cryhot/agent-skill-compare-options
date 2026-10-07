@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>compare-options demo</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0 auto; padding: 16px; max-width: 760px; font-family: system-ui, sans-serif; background: Canvas; color: CanvasText; }
+  .demo-bar { margin: 0 0 16px; font-size: 12px; opacity: .8; }
+  .demo-bar a { color: inherit; }
+  .ct + .ct { margin-top: 32px; }
+  #prompts { margin-top: 24px; padding: 8px; border: 1px dashed currentColor; font-size: 11px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="demo-bar">
+  Mode: <a href="?">standalone page</a> · <a href="?widget">widget</a>, with the prompts printed below
+  · Table script: <a href="?">local</a> · <a href="?table=1">latest release</a>
+</div>
+<script>
+  // In widget mode, the action buttons print the prompt they would send to the chat.
+  if (new URLSearchParams(location.search).has('widget')) {
+    window.sendPrompt = text => {
+      const log = document.getElementById('prompts') || document.body.appendChild(Object.assign(document.createElement('pre'), { id: 'prompts' }));
+      log.textContent += '› ' + text + '\n\n';
+    };
+  }
+</script>
+<script src="data.js"></script>
+<script src="demo.js"></script>
+</body>
+</html>
