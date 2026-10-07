@@ -1,0 +1,340 @@
+<style>
+.ct{--ct-b:var(--border,rgba(0,0,0,.12));--ct-bs:var(--border-strong,rgba(0,0,0,.25));--ct-t2:var(--text-secondary,#5f5e5a);--ct-t3:var(--text-muted,#888780);--ct-acc:var(--text-accent,#378ADD);--ct-hf:color-mix(in srgb,var(--ct-acc) 45%,transparent);--ct-hg:color-mix(in srgb,var(--ct-acc) 20%,transparent);--ct-bg:var(--surface-0,#fff);--ct-tint:color-mix(in srgb,var(--text-primary,#1f1f1d) 8%,var(--ct-bg));--ct-tint2:color-mix(in srgb,var(--text-primary,#1f1f1d) 14%,var(--ct-bg));--ct-hl:color-mix(in srgb,var(--ct-acc) 55%,transparent);--ct-c0:190px;--ct-c:150px;position:relative;font-size:13px;color:var(--text-primary,#1f1f1d)}
+@media (prefers-color-scheme:dark){:root:where(:not([data-mode=light]):not([data-theme=light])) .ct{--ct-bg:var(--surface-0,#1f1f1d);--ct-tint:color-mix(in srgb,var(--text-primary,#f1efe8) 8%,var(--ct-bg));--ct-tint2:color-mix(in srgb,var(--text-primary,#f1efe8) 14%,var(--ct-bg));--ct-b:var(--border,rgba(255,255,255,.14));--ct-bs:var(--border-strong,rgba(255,255,255,.3));--ct-t2:var(--text-secondary,#b4b2a9);color:var(--text-primary,#f1efe8)}}
+:root[data-mode=dark] .ct,:root[data-theme=dark] .ct{--ct-bg:var(--surface-0,#1f1f1d);--ct-tint:color-mix(in srgb,var(--text-primary,#f1efe8) 8%,var(--ct-bg));--ct-tint2:color-mix(in srgb,var(--text-primary,#f1efe8) 14%,var(--ct-bg));--ct-b:var(--border,rgba(255,255,255,.14));--ct-bs:var(--border-strong,rgba(255,255,255,.3));--ct-t2:var(--text-secondary,#b4b2a9);color:var(--text-primary,#f1efe8)}
+.ct:focus{outline:none}
+.ct .ct-title{font-size:15px;font-weight:500;margin:0 0 8px}
+.ct .ct-w{overflow-x:hidden;overflow-x:clip}
+.ct td:not(.ct-n),.ct th:not(.ct-n){transform:translateX(calc(var(--ct-x,0px) * -1))}
+.ct .ct-sb{position:sticky;bottom:0;z-index:5;overflow-x:auto;overflow-y:hidden;background:var(--ct-bg)}
+.ct .ct-sb div{height:1px}
+.ct table{border-collapse:collapse;table-layout:fixed}
+.ct th,.ct td{padding:6px 8px;border-bottom:0.5px solid var(--ct-b);vertical-align:top;text-align:left;line-height:1.35}
+.ct th{font-weight:500;font-size:12px;color:var(--ct-t2)}
+.ct th:not(.ct-n){padding-right:16px}
+.ct .ct-n,.ct thead th{background:var(--ct-tint)}
+.ct .ct-n{position:relative;z-index:2}
+.ct thead th{position:sticky;top:0;z-index:3}
+.ct thead th.ct-n{position:sticky;top:0;background:var(--ct-tint2);z-index:4}
+.ct th.ct-s{cursor:pointer}
+.ct th .ct-hx{position:absolute;top:2px;right:4px;font-size:16px;font-weight:400;line-height:1;color:var(--ct-t3);cursor:pointer;display:none}
+.ct th:hover .ct-hx{display:block}
+.ct th .ct-hx:hover{color:#E53935}
+.ct .ct-dg{background:color-mix(in srgb,var(--ct-acc) 25%,var(--ct-tint))!important}
+.ct .ct-ind{position:absolute;width:2px;margin-left:-1px;background:var(--ct-acc);pointer-events:none;z-index:10;display:none}
+.ct .ct-ghost{position:absolute;top:-1000px;left:0;padding-left:5px;font-size:12px}
+.ct .ct-ghost .ct-li{background:var(--ct-tint2);border-color:var(--ct-bs)}
+.ct .ct-hd{display:flex;gap:6px}
+.ct .ct-ar{flex:none;width:18px;position:relative;text-align:center;line-height:1.35}
+.ct .ct-sa{cursor:pointer;font-weight:400}
+.ct .ct-sa:hover{color:var(--ct-acc)}
+.ct .ct-ar small{position:absolute;left:-3px;top:10px;font-size:10px;font-weight:400;line-height:1;color:var(--ct-t3)}
+.ct .ct-h{display:block;font-size:11px;font-weight:400;color:var(--ct-t3)}
+.ct .ct-kh{color:color-mix(in srgb,#9C27B0 65%,var(--ct-t3))}
+.ct .ct-ks{color:color-mix(in srgb,#FB8C00 65%,var(--ct-t3))}
+.ct .ct-det hr{border:none;border-top:0.5px solid var(--ct-bs);margin:6px -26px 6px 0}
+.ct .ct-l{display:flex;gap:6px;align-items:flex-start}
+.ct .ct-l+.ct-l{margin-top:4px}
+.ct .ct-m{flex:none;width:18px;text-align:center;cursor:pointer;line-height:1.35;position:relative;z-index:0}
+.ct .ct-on,.ct .ct-det,.ct .ct-hb{--ct-hf:color-mix(in srgb,var(--ct-hc,var(--ct-acc)) 50%,transparent);--ct-hg:color-mix(in srgb,var(--ct-hc,var(--ct-acc)) 22%,transparent)}
+.ct .ct-m::after{content:'';position:absolute;inset:-4px -3px}
+.ct .ct-m.ct-on::before{content:'';position:absolute;inset:-7px -6px;border-radius:50%;z-index:-1;background:radial-gradient(circle closest-side,var(--ct-hf) 45%,var(--ct-hg) 75%,transparent)}
+.ct td.ct-cs{box-shadow:inset 0 0 6px 1px var(--ct-hl)}
+.ct tr.ct-rs>td::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--ct-hl),transparent) top/100% 5px no-repeat,linear-gradient(transparent,var(--ct-hl)) bottom/100% 5px no-repeat}
+.ct tr.ct-rs>td:first-child::after{background:linear-gradient(var(--ct-hl),transparent) top/100% 5px no-repeat,linear-gradient(transparent,var(--ct-hl)) bottom/100% 5px no-repeat,linear-gradient(90deg,var(--ct-hl),transparent) left/5px 100% no-repeat}
+.ct .ct-lk{cursor:pointer}
+.ct .ct-lk:hover{text-decoration:underline}
+.ct .ct-sep{color:var(--ct-t3);font-weight:400}
+.ct .ct-v{color:var(--ct-t3)}
+.ct b{font-weight:500}
+.ct code{font-family:var(--font-mono,monospace);font-size:.9em;color:var(--text-danger,#c4372f);background:color-mix(in srgb,currentColor 5%,transparent);border:0.5px solid var(--ct-bs);border-radius:.4em;padding:0 .25em;white-space:pre-wrap;overflow-wrap:anywhere}
+.ct .ct-code{margin:0 0 6px;padding:8px 10px;border-radius:8px;border:0.5px solid var(--ct-bs);background:color-mix(in srgb,var(--text-primary,#1f1f1d) 5%,transparent);overflow-x:auto;font-size:12px;white-space:pre}
+.ct .ct-code code{color:inherit;background:none;border:none;padding:0;font-size:inherit;white-space:inherit}
+.ct .ct-md blockquote{margin:0 0 4px;padding-left:8px;border-left:3px solid var(--ct-bs);border-radius:0;color:var(--ct-t2)}
+.ct .ct-hh{font-weight:500;margin:6px 0 4px}
+.ct .ct-h1{font-size:15px}
+.ct .ct-h2{font-size:14px}
+.ct .ct-h3{font-size:13px}
+.ct .ct-md>:first-child{margin-top:0}
+.ct{--hk:#a626a4;--hs:#50a14f;--hc:#a0a1a7;--hn:#986801;--ht:#4078f2;--ha:#e45649;--hb:#c18401}
+@media (prefers-color-scheme:dark){:root:where(:not([data-mode=light]):not([data-theme=light])) .ct{--hk:#c678dd;--hs:#98c379;--hc:#7f848e;--hn:#d19a66;--ht:#61afef;--ha:#e06c75;--hb:#e5c07b}}
+:root[data-mode=dark] .ct,:root[data-theme=dark] .ct{--hk:#c678dd;--hs:#98c379;--hc:#7f848e;--hn:#d19a66;--ht:#61afef;--ha:#e06c75;--hb:#e5c07b}
+.ct .hljs-keyword,.ct .hljs-selector-tag,.ct .hljs-doctag{color:var(--hk)}
+.ct .hljs-string,.ct .hljs-regexp,.ct .hljs-addition{color:var(--hs)}
+.ct .hljs-comment,.ct .hljs-quote{color:var(--hc);font-style:italic}
+.ct .hljs-number,.ct .hljs-literal,.ct .hljs-symbol{color:var(--hn)}
+.ct .hljs-title,.ct .hljs-section,.ct .hljs-meta{color:var(--ht)}
+.ct .hljs-attr,.ct .hljs-attribute,.ct .hljs-variable,.ct .hljs-template-variable,.ct .hljs-name,.ct .hljs-deletion{color:var(--ha)}
+.ct .hljs-built_in,.ct .hljs-type,.ct .hljs-params{color:var(--hb)}
+.ct .ct-md p{margin:0 0 4px}
+.ct .ct-md ul{margin:0 0 4px;padding-left:18px}
+.ct .ct-leg{padding-bottom:2px}
+.ct .ct-bar{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12px;color:var(--ct-t2);margin:0 0 6px}
+.ct .ct-li{display:inline-flex;gap:4px;align-items:center;cursor:pointer;padding:1px 6px;border-radius:var(--radius,8px);border:1px solid transparent}
+.ct .ct-li.off{border-color:var(--ct-bs);text-decoration:line-through}
+.ct .ct-g{font-weight:500;cursor:pointer}
+.ct .ct-hint{font-size:11px;color:var(--ct-t3);margin:8px 8px 0}
+.ct .ct-det{position:relative;margin:16px 8px 10px;padding:10px 40px 12px 14px;border:0.5px solid var(--ct-bs);border-radius:16px;font-size:13px;box-shadow:0 0 6px 1px var(--ct-hf)}
+.ct .ct-x{position:absolute;top:3.5px;right:3.5px;width:24px;height:24px;box-sizing:border-box;border:0.5px solid var(--ct-bs);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--ct-t2)}
+.ct .ct-x:hover{background:#E53935;border-color:#E53935;color:#fff}
+.ct .ct-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:0 8px 6px}
+.ct button{font-size:12px;cursor:pointer}
+.ct button.ct-hb{box-shadow:0 0 6px 1px var(--ct-hf)}
+.ct pre{margin:4px 8px 6px;white-space:pre-wrap;font-size:11px;padding:8px;border-radius:var(--radius,8px);border:0.5px solid var(--ct-b)}
+</style>
+<div class="ct" id="ct" tabindex="0" style="padding-top:4px"></div>
+<script>
+(()=>{
+const DATA=__DATA__;
+const SC={perfect:[5,'#1E6FD9','perfect','🔵'],good:[4,'#7CB342','good','🟢'],passing:[3,'#FDD835','passing','🟡'],weak:[2,'#FB8C00','weak','🟠'],bad:[1,'#E53935','bad','🔴'],incompatible:[0,'#9C27B0','incompatible','🟣'],unknown:[null,'#E0E0E0','unknown','⚪'],irrelevant:[null,'#424242','irrelevant','⚫']};
+const ORDER=Object.keys(SC);
+const root=document.getElementById('ct');
+const V0=DATA.view||{},arr=x=>Array.isArray(x)?x:[];
+const ids=DATA.criteria.map(c=>c.id);
+const st={hidden:new Set(arr(V0.hidden)),off:new Set(arr(V0.off)),sort:arr(V0.sort).filter(s=>s&&(s.id==='_sum'||ids.includes(s.id))),order:[...arr(V0.order).filter(i=>ids.includes(i)),...ids.filter(i=>!arr(V0.order).includes(i))],open:null,md:null,drag:null,x:0,mv:null,mvci:null,flash:null};
+const hasSP=typeof sendPrompt==='function';
+const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const A=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+const il=x=>x.replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/(^|[^\w*])[_*]([^_*\s][^_*]*)[_*](?![\w*])/g,'$1<i>$2</i>').replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,(m,t,u)=>A(u,t)).replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,(m,p,u)=>p+A(u,u));
+function blocks(p){let o='',cur=null,buf=[];const fl=()=>{if(buf.length)o+=cur==='l'?'<ul>'+buf.map(x=>'<li>'+il(x)+'</li>').join('')+'</ul>':cur==='q'?'<blockquote>'+buf.map(il).join('<br>')+'</blockquote>':'<p>'+buf.map(il).join('<br>')+'</p>';buf=[];cur=null};
+p.split('\n').forEach(l=>{let m;if(!l.trim()){fl();return}
+if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)){fl();o+='<hr>';return}
+if(m=l.match(/^(#{1,6})\s+(.*)/)){fl();o+=`<div class="ct-hh ct-h${Math.min(m[1].length,3)}">${il(m[2])}</div>`;return}
+const ty=(m=l.match(/^\s*[-*] (.*)/))?'l':(m=l.match(/^&gt;\s?(.*)/))?'q':'t';if(cur!==ty)fl();cur=ty;buf.push(ty==='t'?l:m[1])});
+fl();return o}
+const md=(s,inline)=>{const h=esc(s);if(inline)return il(h);const P=h.split(/```([\w+-]*)\n([\s\S]*?)\n?```/);let o='';for(let i=0;i<P.length;i+=3){o+=blocks(P[i]);if(i+2<P.length)o+=`<pre class="ct-code"><code${P[i+1]?` class="language-${P[i+1]}"`:''}>${P[i+2]}</code></pre>`}return o};
+let HL=null;
+function hl(){const els=root.querySelectorAll('.ct-code code[class*="language-"]');if(!els.length)return;if(window.hljs){els.forEach(e=>{try{window.hljs.highlightElement(e)}catch(x){}});return}if(HL)return;HL=document.createElement('script');HL.src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';HL.onload=()=>{try{window.hljs.configure({ignoreUnescapedHTML:true})}catch(x){}hl()};document.head.appendChild(HL)}
+const crit=id=>DATA.criteria.find(c=>c.id===id);
+const rated=c=>c.type==='grade'||c.type==='check';
+const kc=c=>c.hard?'ct-kh':c.soft?'ct-ks':'';
+const kt=c=>c.hard?'hard constraint':c.soft?'soft constraint':'';
+const ordered=()=>st.order.map(crit);
+const vis=()=>ordered().filter(c=>!st.hidden.has(c.id));
+const lvl=k=>SC[k][0];
+const kOf=l=>l==null?'unknown':ORDER.find(k=>SC[k][0]===l);
+function tok(c,cell){
+const v=cell?cell.v:null;
+if(c.type==='grade')return{k:SC[v]?v:'unknown'};
+if(c.type==='check')return{k:v==null?'unknown':v?(c.hard?'perfect':'good'):(c.hard?'incompatible':'bad'),lab:v==null?null:v?'yes':'no'};
+if(c.type==='bool')return{e:v==null?'❔':v?'✅':'❌',lab:v==null?'unknown':v?'yes':'no'};
+const o=v!=null&&c.options&&c.options[v];return o?{cat:v,e:o.emoji,lab:o.label}:{e:'❔',lab:'unknown'};
+}
+const em=t=>t.k?SC[t.k][3]:t.e;
+const lab=t=>t.k?SC[t.k][2]+(t.lab?' · '+t.lab:''):t.lab;
+const hc=t=>t&&t.k?SC[t.k][1]:'';
+const units=cd=>(cd.variants&&cd.variants.length?cd.variants:[{}]).map((v,i)=>({cd,v,i,name:v.name||null,cell:id=>(v.cells&&v.cells[id])||(cd.cells&&cd.cells[id])||null}));
+function vsum(u){let m=null;for(const c of vis())if(rated(c)){const l=lvl(tok(c,u.cell(c.id)).k);if(l!=null)m=m==null?l:Math.min(m,l)}return m}
+function csum(us){const s=us.map(vsum).filter(x=>x!=null);return s.length?Math.max(...s):null}
+function hiddenUnit(u){if(vsum(u)==null&&st.off.has('unknown'))return true;for(const c of vis()){const t=tok(c,u.cell(c.id));if(t.k&&st.off.has(t.k))return true;if(t.cat!=null&&st.off.has('cat:'+c.id+':'+t.cat))return true}return false}
+function sval(u,id){
+if(id==='_sum')return vsum(u);
+const c=crit(id),cell=u.cell(id),t=tok(c,cell);
+if(t.k)return lvl(t.k);
+if(c.type==='bool')return cell&&cell.v!=null?(cell.v?1:0):null;
+return t.cat==null?null:-Object.keys(c.options).indexOf(t.cat);
+}
+const activeSort=()=>st.sort.filter(s=>s.id==='_sum'||!st.hidden.has(s.id));
+function cmpK(a,b){for(const s of activeSort()){const x=sval(a,s.id),y=sval(b,s.id);if(x===y)continue;if(x==null)return 1;if(y==null)return -1;return s.dir==='down'?y-x:x-y}return 0}
+function rows(){
+const out=[];
+DATA.candidates.forEach((cd,ci)=>{const us=units(cd).filter(u=>!hiddenUnit(u)).sort((a,b)=>cmpK(a,b)||a.i-b.i);if(us.length)out.push({cd,ci,us})});
+return out.sort((A,B)=>cmpK(A.us[0],B.us[0])||A.ci-B.ci);
+}
+const mk=(sym,o,tip,c)=>`<span class="ct-m${st.open===o?' ct-on':''}" data-o="${o}"${c?` style="--ct-hc:${c}"`:''} title="${esc(tip)}\nClick for details, then arrows to move">${sym}</span>`;
+const multi=r=>r.us.length>1;
+const own=(u,id)=>!!(u.name&&u.v.cells&&u.v.cells[id]);
+function lines(r,c){
+const L=r.us.map(u=>{const cell=u.cell(c.id);return{u,cell,t:tok(c,cell)}});
+const sig=l=>JSON.stringify([l.t,l.cell&&l.cell.t]);
+return L.every(l=>sig(l)===sig(L[0]))?[{...L[0],same:true}]:L;
+}
+const cellKey=(r,c,l)=>`c|${r.ci}|${l.u.i}|${c.id}|${!l.same||(r.us.length===1&&own(l.u,c.id))?1:0}`;
+const nameItems=r=>multi(r)?[{k:`n|${r.ci}|-1`,vi:null},...r.us.map(u=>({k:`n|${r.ci}|${u.i}`,vi:u.i}))]:[{k:`n|${r.ci}|${r.us[0].name?r.us[0].i:-1}`,vi:null}];
+const items=(r,col,V)=>col?lines(r,V[col-1]).map(l=>({k:cellKey(r,V[col-1],l),vi:l.same?null:l.u.i})):nameItems(r);
+function locate(key){const R=rows(),V=vis();for(let ri=0;ri<R.length;ri++)for(let col=0;col<=V.length;col++){const its=items(R[ri],col,V),i=its.findIndex(x=>x.k===key);if(i>=0)return{R,V,ri,col,i,its}}return null}
+function nav(dx,dy){
+const p=locate(st.open);if(!p)return false;const{R,V}=p;let{ri,col,i,its}=p;const r=R[ri],cur=its[i];
+if(st.mvci!==r.ci){st.mvci=r.ci;st.mv=cur.vi}
+if(dy){i+=dy;if(i<0||i>=its.length){ri+=dy;if(ri<0||ri>=R.length)return false;its=items(R[ri],col,V);i=dy>0?0:its.length-1}const t=its[i];st.open=t.k;st.mvci=R[ri].ci;st.mv=t.vi;return true}
+if(col===0&&dx<0){if(cur.vi==null)return false;st.open=its[0].k;st.mv=null;return true}
+const nc=col+dx;if(nc<0||nc>V.length)return false;
+const ni=items(r,nc,V);const t=(st.mv!=null&&ni.find(x=>x.vi===st.mv))||ni[0];
+st.open=t.k;return true;
+}
+function cellHtml(r,c){return lines(r,c).map(l=>`<div class="ct-l">${mk(em(l.t),cellKey(r,c,l),lab(l.t),hc(l.t))}<span>${!l.same&&l.u.name?`<span class="ct-v">${esc(l.u.name)}:</span> `:''}${md(l.cell&&l.cell.t,true)}</span></div>`).join('')}
+function nameHtml(r){
+const cd=r.cd,nm=cd.url?A(esc(cd.url),esc(cd.name)):esc(cd.name),k=kOf(csum(r.us));
+const one=!multi(r)&&r.us[0].name?r.us[0]:null;
+let h=`<div class="ct-l">${mk(SC[k][3],`n|${r.ci}|${one?one.i:-1}`,SC[k][2]+' · summary',SC[k][1])}<div><span style="font-weight:500">${nm}</span>${one?` <span class="ct-sep">›</span> ${esc(one.name)}`:''}${cd.sub?`<div class="ct-v" style="font-size:12px">${esc(cd.sub)}</div>`:''}</div></div>`;
+if(multi(r))h+=r.us.map(u=>{const k=kOf(vsum(u));return`<div class="ct-l" style="padding-left:14px;font-size:12px">${mk(SC[k][3],`n|${r.ci}|${u.i}`,SC[k][2]+' · summary',SC[k][1])}<span>${esc(u.name)}</span></div>`}).join('');
+return h;
+}
+function arrow(id){const S=activeSort(),i=S.findIndex(s=>s.id===id);if(i<0)return'';return`<span class="ct-sa" data-a="${id}" title="Click: flip the direction\nMiddle click: stop sorting by it">${S[i].dir==='down'?'↓':'↑'}</span>`+(S.length>1?`<small>${i+1}</small>`:'')}
+function legendKeys(){
+const V=vis(),S=new Set();
+if(V.some(c=>c.type==='grade'))['perfect','good','passing','weak','bad'].forEach(k=>S.add(k));
+if(V.some(c=>c.type==='check'&&!c.hard))['good','bad'].forEach(k=>S.add(k));
+if(V.some(c=>c.type==='check'&&c.hard))['perfect','incompatible'].forEach(k=>S.add(k));
+if(V.some(c=>c.hard))S.add('incompatible');
+DATA.candidates.forEach(cd=>units(cd).forEach(u=>{if(vsum(u)==null)S.add('unknown');V.forEach(c=>{const k=tok(c,u.cell(c.id)).k;if(k==='unknown'||k==='irrelevant')S.add(k)})}));
+const cats=V.filter(c=>c.type==='cat').map(c=>({c,opts:Object.entries(c.options).map(([k,o])=>({key:'cat:'+c.id+':'+k,emoji:o.emoji,label:o.label}))}));
+return{sc:ORDER.filter(k=>S.has(k)),cats};
+}
+function legendHtml(){
+const L=legendKeys(),it=(key,sym,l)=>`<span class="ct-li${st.off.has(key)?' off':''}" data-f="${key}" title="Click: ${st.off.has(key)?'show':'hide'} the candidates with this mark\nMiddle click: hide them">${sym} ${esc(l)}</span>`;
+const g=(keys,l)=>`<span class="ct-g" data-g="${keys.join(',')}" title="Click: ${keys.some(k=>st.off.has(k))?'show all':'hide all'}\nMiddle click: hide all">${esc(l)}</span>`;
+let h=L.sc.length?`<div class="ct-bar">${g(L.sc,'Legend')}${L.sc.map(k=>it(k,SC[k][3],SC[k][2])).join('')}</div>`:'';
+L.cats.forEach(x=>{h+=`<div class="ct-bar">${g(x.opts.map(o=>o.key),x.c.label)}${x.opts.map(o=>it(o.key,o.emoji,o.label)).join('')}</div>`});
+const H=ordered().filter(c=>st.hidden.has(c.id));
+h+=`<div class="ct-bar"><span class="ct-g" data-g="_crit" title="Click: ${H.length?'show':'hide'} all criteria\nMiddle click: hide all criteria\nDrop a criterion here to hide it">Hidden criteria</span>${H.length?H.map(c=>`<span class="ct-li off ${kc(c)}" draggable="true" data-d="${c.id}" data-u="${c.id}" title="Click: show this criterion again\nDrag: reorder, or drop on the table to show it there">${esc(c.label)}</span>`).join(''):'<span class="ct-li ct-v" style="cursor:default">none</span>'}</div>`;
+return h;
+}
+const srcs=s=>s&&s.length?'<div style="margin-top:6px;font-size:12px">Sources: '+s.map(x=>typeof x==='string'?A(esc(x),esc(x.replace(/^https?:\/\//,'').slice(0,60))):A(esc(x.u),esc(x.t))).join(' · ')+'</div>':'';
+function openInfo(){
+const[ty,ci,vi,id,same]=st.open.split('|'),cd=DATA.candidates[+ci],u=units(cd)[Math.max(+vi,0)],v=+vi>=0&&cd.variants?cd.variants[+vi]:null;
+const o={ty,ci:+ci,cd,v,u,showV:ty==='n'?!!v:same==='1'};
+if(ty==='n'){const k=kOf(v?vsum(u):csum(units(cd)));o.col=SC[k][1];o.sub=`${SC[k][3]} ${SC[k][2]} · summary`;const x=v||cd;o.body=x.info||'';o.src=x.src}
+else{o.c=crit(id);o.cell=u.cell(id);o.t=tok(o.c,o.cell);o.col=hc(o.t);o.sub=`${em(o.t)} ${lab(o.t)}`;o.kind=kt(o.c);o.body=(o.cell&&o.cell.t)||'No justification recorded.';o.more=o.cell&&o.cell.d;o.src=o.cell&&o.cell.src}
+o.who=`"${cd.name}"`+(o.showV?` › "${v?v.name:u.name}"`:'');
+return o;
+}
+function detailHtml(o){
+const lk=(txt,k)=>`<span class="ct-lk" data-oo="${k}" title="Show its details">${esc(txt)}</span>`;
+const grey=s=>s?` <span class="ct-sep">(${esc(s)})</span>`:'';
+const cd=o.cd,vname=o.v?o.v.name:o.u.name;
+let path;
+if(o.ty==='n'&&!o.v)path=[(cd.url?A(esc(cd.url),esc(cd.name)):esc(cd.name))+grey(cd.sub)];
+else if(o.ty==='n'){const url=o.v.url||cd.url;path=[lk(cd.name,`n|${o.ci}|-1`),(url?A(esc(url),esc(vname)):esc(vname))+grey(o.v.sub||cd.sub)]}
+else{path=[lk(cd.name,`n|${o.ci}|-1`)];if(o.showV)path.push(lk(vname,`n|${o.ci}|${o.u.i}`));path.push(esc(o.c.label)+grey(o.c.info))}
+return `<div class="ct-det"${o.col?` style="--ct-hc:${o.col}"`:''}><span class="ct-x" role="button" tabindex="0" data-close="1" aria-label="Close details" title="Close (Esc)">×</span><div style="font-weight:500">${path.join(' <span class="ct-sep">&gt;</span> ')}</div><div class="ct-v" style="margin:2px 0 6px">${esc(o.sub)}${o.kind?` · <span class="${kc(o.c)}">${o.kind}</span>`:''}</div><div class="ct-md">${md(o.body)}${o.more?'<hr>'+md(o.more):''}</div>${srcs(o.src)}</div>`;
+}
+function mdOf(){
+const V=vis(),R=rows(),L=legendKeys(),p=s=>String(s??'').replace(/\|/g,'\\|').replace(/\n/g,' ');
+const lk=[...L.sc.map(k=>[SC[k][3],SC[k][2]]),...L.cats.flatMap(g=>g.opts.map(o=>[o.emoji,o.label]))];
+let m=DATA.title?`**${p(DATA.title)}**\n\n`:'';
+if(lk.length)m+=`| ${lk.map(x=>x[0]).join(' | ')} |\n|${'---|'.repeat(lk.length)}\n| ${lk.map(x=>x[1]).join(' | ')} |\n\n`;
+m+=`| Candidate | ${V.map(c=>p(c.label)+(c.hard?' (hard)':'')).join(' | ')} |\n|${'---|'.repeat(V.length+1)}\n`;
+R.forEach(r=>{const cd=r.cd,nm=cd.url?`[${p(cd.name)}](${cd.url})`:p(cd.name);
+let n=`${SC[kOf(csum(r.us))][3]} **${nm}**`+(!multi(r)&&r.us[0].name?` › ${p(r.us[0].name)}`:'');if(multi(r))n+=r.us.map(u=>`<br>${SC[kOf(vsum(u))][3]} ${p(u.name)}`).join('');
+m+=`| ${n} | ${V.map(c=>lines(r,c).map(l=>`${em(l.t)} ${!l.same&&l.u.name?'_'+p(l.u.name)+'_: ':''}${p(l.cell&&l.cell.t)}`).join('<br>')).join(' | ')} |\n`});
+if(st.hidden.size)m+=`\nHidden criteria: ${ordered().filter(c=>st.hidden.has(c.id)).map(c=>c.label).join(', ')}.\n`;
+const offs=[...L.sc.filter(k=>st.off.has(k)).map(k=>SC[k][3]),...L.cats.flatMap(g=>g.opts).filter(o=>st.off.has(o.key)).map(o=>o.emoji)];
+if(offs.length)m+=`\nHidden marks: ${offs.join(' ')}.\n`;
+return m;
+}
+const viewState=()=>{const v={order:st.order,hidden:ordered().filter(c=>st.hidden.has(c.id)).map(c=>c.id),off:[...st.off],sort:st.sort};Object.keys(v).forEach(k=>{if(!v[k].length)delete v[k]});return v};
+const T=DATA.title||'comparison';
+function setX(x){const w=root.querySelector('.ct-w'),t=w&&w.querySelector('table');if(!t)return;st.x=Math.max(0,Math.min(x,t.offsetWidth-w.clientWidth));t.style.setProperty('--ct-x',st.x+'px')}
+function syncBar(){
+const w=root.querySelector('.ct-w'),sb=root.querySelector('.ct-sb');if(!w||!sb)return;
+const t=w.querySelector('table');
+sb.style.display=t.offsetWidth>w.clientWidth?'':'none';
+sb.firstChild.style.width=t.offsetWidth+'px';
+setX(st.x);sb.scrollLeft=st.x;
+}
+function reveal(){
+const m=root.querySelector('.ct-m.ct-on');if(!m)return;const td=m.closest('td');
+if(td&&!td.classList.contains('ct-n')){const w=root.querySelector('.ct-w'),c0=root.querySelector('thead th.ct-n'),r=td.getBoundingClientRect(),W=w.getBoundingClientRect(),L=W.left+c0.offsetWidth;let dx=0;if(r.left<L)dx=r.left-L;else if(r.right>W.right)dx=r.right-W.right;if(dx){setX(st.x+dx);root.querySelector('.ct-sb').scrollLeft=st.x}}
+m.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+function render(){
+const V=vis(),R=rows(),oi=st.open?openInfo():null;
+const th=(id,cls,label,extra,tip,drag)=>`<th class="${cls} ct-s" data-s="${id}"${drag?` draggable="true" data-d="${id}"`:''} title="${esc(tip)}"><div class="ct-hd"><span class="ct-ar">${arrow(id)}</span><div>${label}${extra}</div></div>${drag?`<span class="ct-hx" data-h="${id}" title="Hide this criterion">×</span>`:''}</th>`;
+let h=DATA.title?`<div class="ct-title">${esc(DATA.title)}</div>`:'';
+h+=`<div class="ct-leg">${legendHtml()}</div>`;
+h+=`<div class="ct-w"><table style="width:max(100%,calc(var(--ct-c0) + ${V.length} * var(--ct-c)))"><colgroup><col style="width:var(--ct-c0)">${V.map(()=>'<col>').join('')}</colgroup><thead><tr>`;
+h+=th('_sum','ct-n','Candidate','','Click: sort by summary first (again to stop)');
+h+=V.map(c=>th(c.id,'',esc(c.label),kt(c)?`<span class="ct-h ${kc(c)}">${kt(c)}</span>`:'',(c.info?c.info+'\n':'')+'Click: sort by it first (again to stop)\nDrag: reorder, or drop on the legend to hide\nMiddle click: hide',true)).join('')+'</tr></thead><tbody>';
+const O=st.open?st.open.split('|'):[];
+R.forEach(r=>{const mine=+O[1]===r.ci;h+=`<tr${mine&&O[0]==='n'?' class="ct-rs"':''}><td class="ct-n">${nameHtml(r)}</td>${V.map(c=>`<td${mine&&O[0]==='c'&&O[3]===c.id?' class="ct-cs"':''}>${cellHtml(r,c)}</td>`).join('')}</tr>`});
+if(!R.length)h+=`<tr><td class="ct-n ct-v">All candidates are hidden by the legend.</td>${V.map(()=>'<td></td>').join('')}</tr>`;
+h+='</tbody></table></div><div class="ct-sb"><div></div></div>';
+h+=oi?detailHtml(oi):'<div class="ct-hint">Click an emoji for info, then arrows to navigate  ·  Click a criterion to sort, drag to reorder  ·  Click a label or group to hide</div>';
+const hb=oi&&oi.col?` style="--ct-hc:${oi.col}"`:'';
+h+=`<div class="ct-acts"><button data-x="md" title="${hasSP?'Send this view (filters, order, hidden criteria) to the chat as a markdown table':'Show this view as a markdown table'}">${hasSP?'Export as markdown ↗':'Show as markdown'}</button>`;
+if(hasSP)h+=`<button data-x="art" title="Ask Claude to publish the whole report as a shareable artifact page, keeping this table's view">Export as artifact ↗</button>`;
+if(hasSP&&oi)h+=`<button class="ct-hb" data-x="cand"${hb} title="Ask Claude to research ${esc(oi.who)} in more depth">Explore candidate ↗</button>`;
+if(hasSP&&oi&&oi.ty==='c')h+=`<button class="ct-hb" data-x="eval"${hb} title="Ask Claude to dig into the &quot;${esc(oi.c.label)}&quot; rating of ${esc(oi.who)}">Explore evaluation ↗</button>`;
+if(st.flash)h+=`<span class="ct-v" style="align-self:center;font-size:12px">${esc(st.flash)}</span>`;
+h+='</div>';
+if(st.md)h+=`<pre>${esc(mdOf())}</pre>`;
+h+='<div class="ct-ind"></div>';
+root.innerHTML=h;
+const w=root.querySelector('.ct-w'),sb=root.querySelector('.ct-sb');
+sb.onscroll=()=>setX(sb.scrollLeft);
+w.onwheel=e=>{const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.shiftKey?e.deltaY:0;if(!d||sb.style.display==='none')return;e.preventDefault();sb.scrollLeft+=d};
+syncBar();hl();
+}
+function send(txt){
+const fail=err=>{st.flash='Could not send: '+err;render()};
+try{window.focus();root.focus({preventScroll:true})}catch(x){}
+setTimeout(()=>{try{const r=sendPrompt(txt);if(r&&typeof r.catch==='function')r.catch(fail)}catch(err){fail(err)}},30);
+}
+const closeHidden=()=>{if(st.open&&st.hidden.has(st.open.split('|')[3]))st.open=null};
+root.addEventListener('click',e=>{
+if(e.target.closest('a'))return;
+st.flash=null;
+const el=e.target.closest('[data-a],[data-h],[data-s],[data-u],[data-g],[data-f],[data-o],[data-oo],[data-x],[data-close]');if(!el)return;const d=el.dataset;
+if(d.h){st.hidden.add(d.h);closeHidden()}
+else if(d.a){const s=st.sort.find(s=>s.id===d.a);if(s)s.dir=s.dir==='down'?'up':'down'}
+else if(d.s){const A=activeSort(),i=st.sort.findIndex(s=>s.id===d.s);if(A[0]&&A[0].id===d.s)st.sort.splice(i,1);else st.sort.unshift(i<0?{id:d.s,dir:'down'}:st.sort.splice(i,1)[0])}
+else if(d.u)st.hidden.delete(d.u);
+else if(d.g==='_crit'){if(st.hidden.size)st.hidden.clear();else{ids.forEach(i=>st.hidden.add(i));closeHidden()}}
+else if(d.g){const ks=d.g.split(',');if(ks.some(k=>st.off.has(k)))ks.forEach(k=>st.off.delete(k));else ks.forEach(k=>st.off.add(k))}
+else if(d.f)st.off.has(d.f)?st.off.delete(d.f):st.off.add(d.f);
+else if(d.o){if(st.open===d.o)st.open=null;else{const p=locate(d.o);st.open=d.o;st.mvci=+d.o.split('|')[1];st.mv=p?p.its[p.i].vi:null}root.focus({preventScroll:true})}
+else if(d.oo)st.open=d.oo;
+else if(d.close)st.open=null;
+else if(d.x==='md'){if(hasSP)send('Print this comparison view as markdown, as is:\n\n'+mdOf());else st.md=!st.md}
+else if(d.x==='art')send(`Publish the comparison report as an artifact, with all its tables. Restore the "${T}" table in this view state: `+JSON.stringify(viewState()));
+else if(d.x==='cand'){const o=openInfo();send(`Explore ${o.who} in more depth, from the "${T}" comparison.`)}
+else if(d.x==='eval'){const o=openInfo();send(`Explore the "${o.c.label}" evaluation of ${o.who}, from the "${T}" comparison. Current rating: ${em(o.t)} ${lab(o.t)}, "${(o.cell&&o.cell.t)||''}". Verify it and go deeper.`)}
+render();
+});
+root.addEventListener('mousedown',e=>{if(e.button===1&&e.target.closest('[data-a],[data-g],[data-f],[data-d]'))e.preventDefault()});
+root.addEventListener('auxclick',e=>{
+if(e.button!==1)return;const el=e.target.closest('[data-a],[data-g],[data-f],[data-d]');if(!el)return;e.preventDefault();const d=el.dataset;
+if(d.a)st.sort=st.sort.filter(s=>s.id!==d.a);else if(d.g==='_crit')ids.forEach(i=>st.hidden.add(i));else if(d.g)d.g.split(',').forEach(k=>st.off.add(k));else if(d.f)st.off.add(d.f);else if(d.d)st.hidden.add(d.d);
+closeHidden();render();
+});
+root.addEventListener('keydown',e=>{
+if(!st.open)return;
+if(e.key==='Escape'){st.open=null;render();return}
+const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!dir)return;
+e.preventDefault();if(nav(dir[0],dir[1])){render();reveal()}
+});
+function dropAt(e){
+const tg=e.target.closest?e.target:null;if(!tg)return null;
+if(tg.closest('.ct-w')){
+const W=root.querySelector('.ct-w').getBoundingClientRect(),c0=root.querySelector('thead th.ct-n').getBoundingClientRect();
+const hs=[...root.querySelectorAll('thead th[data-d]')].filter(x=>x.dataset.d!==st.drag);
+let b=null,x=null;for(const th of hs){const r=th.getBoundingClientRect();if(e.clientX<r.left+r.width/2){b=th.dataset.d;x=r.left;break}}
+if(b==null)x=hs.length?hs[hs.length-1].getBoundingClientRect().right:c0.right;
+return{zone:'t',b,x:Math.min(Math.max(x,c0.right),W.right),top:W.top,h:W.height};
+}
+if(tg.closest('.ct-leg')){
+const cs=[...root.querySelectorAll('.ct-leg .ct-li[data-u]')].filter(x=>x.dataset.u!==st.drag);
+if(!cs.length){const r=root.querySelector('.ct-leg [data-dz],.ct-leg [data-g="_crit"]').getBoundingClientRect();return{zone:'l',b:null,x:r.right+5,top:r.top,h:r.height}}
+let best=null,bd=1e9;for(const c of cs){const r=c.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dd=Math.hypot(e.clientX-cx,(e.clientY-cy)*2);if(dd<bd){bd=dd;best={c,r,after:e.clientX>cx}}}
+return{zone:'l',b:best.c.dataset.u,after:best.after,x:best.after?best.r.right+4:best.r.left-4,top:best.r.top,h:best.r.height};
+}
+return null;
+}
+function showInd(t){const i=root.querySelector('.ct-ind'),R=root.getBoundingClientRect();if(!i)return;if(!t){i.style.display='none';return}Object.assign(i.style,{display:'block',left:(t.x-R.left)+'px',top:(t.top-R.top)+'px',height:t.h+'px'})}
+function applyDrop(a,t){
+const o=st.order,mv=(ref,after)=>{o.splice(o.indexOf(a),1);o.splice(o.indexOf(ref)+(after?1:0),0,a)};
+if(t.zone==='t'){if(t.b)mv(t.b,false);else{const V=vis().filter(c=>c.id!==a);if(V.length)mv(V[V.length-1].id,true)}st.hidden.delete(a)}
+else{if(t.b)mv(t.b,t.after);st.hidden.add(a)}
+}
+root.addEventListener('dragstart',e=>{const t=e.target.closest&&e.target.closest('[data-d]');if(!t)return;st.drag=t.dataset.d;t.classList.add('ct-dg');
+const g=document.createElement('span');g.className='ct-ghost';g.innerHTML=`<span class="ct-li ${kc(crit(st.drag))}">${esc(crit(st.drag).label)}</span>`;root.appendChild(g);
+e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',st.drag);try{e.dataTransfer.setDragImage(g,0,10)}catch(x){}setTimeout(()=>g.remove(),0)});
+root.addEventListener('dragover',e=>{if(!st.drag)return;const t=dropAt(e);showInd(t);if(t)e.preventDefault()});
+root.addEventListener('dragleave',e=>{if(!root.contains(e.relatedTarget))showInd(null)});
+root.addEventListener('drop',e=>{if(!st.drag)return;const t=dropAt(e);showInd(null);if(!t)return;e.preventDefault();applyDrop(st.drag,t);st.drag=null;closeHidden();render()});
+root.addEventListener('dragend',()=>{st.drag=null;showInd(null);root.querySelectorAll('.ct-dg').forEach(x=>x.classList.remove('ct-dg'))});
+if(window.ResizeObserver)new ResizeObserver(syncBar).observe(root);
+render();
+})();
+</script>
