@@ -1,7 +1,14 @@
 # Interactive comparison table
 
 [`compare-table.html`](compare-table.html) renders the comparison as a sortable, filterable table.
-Replace `__DATA__` in it with the JSON described below, and keep the rest of the file as is.
+Replace `__DATA__` in it with the JSON described below, written on one line with every `</` escaped as `<\/`,
+and keep the rest of the file as is.
+
+The table itself is [`compare-table.js`](compare-table.js), which the wrapper loads from jsDelivr:
+it renders every `.ct` element of the page that holds its data as `<script type="application/json">`.
+For several tables on one page, repeat the first line of the wrapper, and load the script once, after them.
+Where the script can't be loaded (offline, or a page that must stand alone),
+replace the `<script src="…">` line with `<script>`, the content of `compare-table.js`, and `</script>`.
 
 - **Inline widget** (desktop app, claude.ai): pass the result as the widget code.
   The action buttons then send a prompt back to the chat, and show whether it was sent.

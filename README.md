@@ -41,7 +41,8 @@ download it, extract it, rename that folder to `compare-options`, then zip the r
 ## Files
 
 - [`SKILL.md`](SKILL.md): the method, read by the agent.
-- [`assets/compare-table.html`](assets/compare-table.html): the interactive table template.
+- [`assets/compare-table.html`](assets/compare-table.html): the interactive table template, a wrapper for the data.
+- [`assets/compare-table.js`](assets/compare-table.js): the interactive table itself, which the template loads from jsDelivr.
 - [`assets/compare-table.md`](assets/compare-table.md): its data format, and what the user can do with it.
 
 
