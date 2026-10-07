@@ -1,5 +1,12 @@
 # compare-options
 
+[![GitHub repo](https://img.shields.io/badge/cryhot%2Fagent--skill--compare--options-%20?labelColor=gray&logo=github&logoColor=white&color=darkgray&style=flat-square)](https://github.com/cryhot "home page on GitHub")
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-SKILL.md-%20?labelColor=gray&logo=markdown&logoColor=white&color=blue&style=flat-square)](https://agentskills.io "skill format specification")
+[![License](https://img.shields.io/github/license/cryhot/agent-skill-compare-options?logo=git&logoColor=white&style=flat-square)](LICENSE "project license")
+[![Release](https://img.shields.io/github/v/release/cryhot/agent-skill-compare-options?logo=github&logoColor=white&style=flat-square)](https://github.com/cryhot/agent-skill-compare-options/releases/latest "latest release")
+[![Release zip](https://img.shields.io/github/actions/workflow/status/cryhot/agent-skill-compare-options/release.yml?label=release%20zip&logo=githubactions&logoColor=white&style=flat-square)](https://github.com/cryhot/agent-skill-compare-options/actions/workflows/release.yml "workflow packing the claude.ai zip")
+[![jsDelivr](https://img.shields.io/jsdelivr/gh/hm/cryhot/agent-skill-compare-options?logo=jsDelivr&logoColor=white&style=flat-square)](https://www.jsdelivr.com/package/gh/cryhot/agent-skill-compare-options "monthly CDN hits of the interactive table")
+
 An agent skill to survey and compare options before choosing or building anything, in any domain:
 software tools, libraries, web services, phone apps, hardware, furniture, cars, marketplace skills or extensions.
 
@@ -19,23 +26,40 @@ and export the view as markdown or as an artifact.
 
 Clone it into the skills directory of your agent, as `compare-options`: the directory name must match the skill's name.
 
-Claude Code:
+### Claude Code
+
 ```sh
 git clone https://github.com/cryhot/agent-skill-compare-options ~/.claude/skills/compare-options
 ```
 
-Codex, Gemini CLI, Cursor, GitHub Copilot, and other agents reading the shared `~/.agents/skills` directory:
+
+### Codex, Gemini CLI, Cursor, GitHub Copilot…
+
+These, and other agents reading the shared `~/.agents/skills` directory:
 ```sh
 git clone https://github.com/cryhot/agent-skill-compare-options ~/.agents/skills/compare-options
 ```
 
-opencode reads both directories: install it in only one of them, or it loads the skill twice.
 
-To update it later, run `git pull` in that directory.
+### opencode
 
-For claude.ai, which has no skills directory, upload a zip in **Customize > Skills** instead.
-The zip must hold a folder named `compare-options`, while GitHub's **Download ZIP** names it `agent-skill-compare-options-main`:
-download it, extract it, rename that folder to `compare-options`, then zip the renamed folder itself (not its contents).
+opencode reads both directories above: install the skill in only one of them, or it loads the skill twice.
+
+
+### claude.ai
+
+[claude.ai](https://claude.ai) has no skills directory:
+download [`compare-options.zip`](https://github.com/cryhot/agent-skill-compare-options/releases/latest/download/compare-options.zip) from the latest release,
+and upload it in **Customize > Skills**.
+
+> [!IMPORTANT]
+> GitHub's **Download ZIP** won't do: its folder is named `agent-skill-compare-options-main`, and [claude.ai](https://claude.ai) needs `compare-options`.
+
+
+### Update
+
+Run `git pull` in the skill's directory.
+On [claude.ai](https://claude.ai), upload the zip of the latest release again.
 
 
 ## Files

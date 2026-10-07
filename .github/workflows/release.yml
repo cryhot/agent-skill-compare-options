@@ -1,0 +1,36 @@
+# On each version tag, pack the skill as the zip claude.ai expects and attach it to the tag's release.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # claude.ai wants the skill's folder, named after the skill, at the top of the zip.
+      - name: Pack the skill
+        run: git archive --prefix=compare-options/ -o compare-options.zip HEAD
+
+      - name: Check the zip
+        run: |
+          unzip -l compare-options.zip
+          unzip -l compare-options.zip | grep -q ' compare-options/SKILL\.md$'
+
+      # Re-running on an existing release replaces its zip.
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" compare-options.zip --clobber
+          else
+            gh release create "$TAG" compare-options.zip --title "$TAG" --generate-notes --verify-tag
+          fi
