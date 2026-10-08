@@ -80,8 +80,15 @@
 
 /* Table: clipped instead of scrolling; the cells after the name column shift by --ct-scroll. */
 .ct .ct-wrap { overflow-x: hidden; overflow-x: clip; }
-.ct table { border-collapse: collapse; table-layout: fixed; }
-.ct th, .ct td { padding: 6px 8px; border-bottom: 0.5px solid var(--ct-border); vertical-align: top; text-align: left; line-height: 1.35; }
+.ct table { border-collapse: collapse; width: max-content; }
+/* With a scrollbar, the columns fit their content up to --ct-col (see fitColumns),
+   through their inner blocks as browsers ignore max-width on columns and cells.
+   Without one, the table takes the full width, and the texts wrap to the columns. */
+.ct table.ct-fits { width: 100%; }
+.ct .ct-name { width: var(--ct-first-col); }
+.ct .ct-name > * { max-width: var(--ct-first-col); }
+.ct table:not(.ct-fits) td:not(.ct-name) > *, .ct table:not(.ct-fits) th:not(.ct-name) > .ct-head { max-width: var(--ct-col); }
+.ct th, .ct td { padding: 6px 8px 6px 6px;border-bottom: 0.5px solid var(--ct-border); vertical-align: top; text-align: left; line-height: 1.35; }
 .ct td:not(.ct-name), .ct th:not(.ct-name) { transform: translateX(calc(var(--ct-scroll, 0px) * -1)); }
 .ct .ct-name, .ct thead th { background: var(--ct-tint); }
 .ct .ct-name { position: relative; z-index: 2; }
@@ -150,6 +157,8 @@
 /* Markdown, in cells and details. */
 .ct b { font-weight: 500; }
 .ct code { padding: 0 .25em; border: 0.5px solid var(--ct-border-strong); border-radius: .4em; background: color-mix(in srgb, currentColor 5%, transparent); font-family: var(--font-mono, monospace); font-size: .9em; color: var(--text-danger, #c4372f); white-space: pre-wrap; overflow-wrap: anywhere; }
+/* In the table, a long path widens its column instead (see fitColumns). */
+.ct td code { overflow-wrap: normal; }
 .ct .ct-markdown > :first-child { margin-top: 0; }
 .ct .ct-markdown p { margin: 0 0 4px; }
 .ct .ct-markdown ul { margin: 0 0 4px; padding-left: 18px; }
@@ -609,9 +618,8 @@
           criterion: c, cell, mark,
           color: markColor(mark),
           status: `${markEmoji(mark)} ${markLabel(mark)}`,
-          constraint: constraintText(c),
-          body: (cell && cell.t) || 'No justification recorded.',
-          more: cell && cell.d,
+          text: (cell && cell.t) || '',
+          body: cell && cell.d,
           sources: cell && cell.src,
         });
       }
@@ -621,7 +629,7 @@
 
     function detailsHtml(o) {
       const goTo = (text, key) => `<span class="ct-link" data-goto="${key}" title="Show its details">${escapeHtml(text)}</span>`;
-      const aside = s => s ? ` <span class="ct-dim">(${escapeHtml(s)})</span>` : '';
+      const aside = (s, cls = '') => s ? ` <span class="ct-dim">· <span class="${cls}">${escapeHtml(s)}</span></span>` : '';
       const nameLink = (name, url) => url ? link(escapeHtml(url), escapeHtml(name)) : escapeHtml(name);
       const cd = o.candidate, variantName = o.variant ? o.variant.name : o.u.name;
 
@@ -634,15 +642,20 @@
       } else {
         path = [goTo(cd.name, `n|${o.ci}|-1`)];
         if (o.showVariant) path.push(goTo(variantName, `n|${o.ci}|${o.u.index}`));
-        path.push(escapeHtml(o.criterion.label) + aside(o.criterion.info));
+        // The criterion's description takes its constraint's color, or names the constraint when there is none.
+        const c = o.criterion;
+        path.push(escapeHtml(c.label) + aside(c.info || constraintText(c), constraintClass(c)));
       }
+
+      // Status line: the mark and the cell's text; the longer text goes below a rule.
+      const status = [`<span class="ct-muted">${escapeHtml(o.status)}</span>`];
+      if (o.type === 'c') status.push(o.text ? markdown(o.text, true) : '<span class="ct-muted">no justification recorded</span>');
 
       return `<div class="ct-details"${o.color ? ` style="--ct-halo-color:${o.color}"` : ''}>` +
         '<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="Close details" title="Close (Esc)">×</span>' +
         `<div style="font-weight:500">${path.join(' <span class="ct-dim">&gt;</span> ')}</div>` +
-        `<div class="ct-muted" style="margin:2px 0 6px">${escapeHtml(o.status)}` +
-        (o.constraint ? ` · <span class="${constraintClass(o.criterion)}">${o.constraint}</span>` : '') + '</div>' +
-        `<div class="ct-markdown">${markdown(o.body)}${o.more ? '<hr>' + markdown(o.more) : ''}</div>` +
+        `<div style="margin-top:2px">${status.join('<span class="ct-muted"> · </span>')}</div>` +
+        (o.body ? `<hr><div class="ct-markdown">${markdown(o.body)}</div>` : '') +
         sourcesHtml(o.sources) +
         '</div>';
     }
@@ -716,6 +729,46 @@
       table.style.setProperty('--ct-scroll', state.x + 'px');
     }
 
+    // Narrows each criterion column to its longest line: once a text wraps at the --ct-col cap,
+    // the browser keeps the whole cap as the column's width, even when the wrapped lines are shorter.
+    // If the table then fits its frame, it drops the caps and takes the full width instead.
+    function fitColumns() {
+      const wrap = root.querySelector('.ct-wrap'), table = wrap && wrap.querySelector('table');
+      if (!table) return;
+      const range = document.createRange(), columns = [];
+      // The right end of the block's lines: its texts, and its inline elements for their padding (eg. inline code).
+      // Block boxes are left out, as a wrapping block spans the whole cap.
+      function lineEnd(block) {
+        let right = block.getBoundingClientRect().left;
+        const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          let rects;
+          if (node.nodeType === Node.TEXT_NODE) { range.selectNodeContents(node); rects = range.getClientRects(); }
+          else if (getComputedStyle(node).display.startsWith('inline')) rects = node.getClientRects();
+          else continue;
+          for (const r of rects) right = Math.max(right, r.right);
+        }
+        return right;
+      }
+      table.classList.remove('ct-fits');
+      for (const row of table.rows) {
+        [...row.cells].forEach((cell, i) => {
+          if (cell.classList.contains('ct-name')) return;
+          for (const block of cell.querySelectorAll(':scope > .ct-line, :scope > .ct-head')) {
+            block.style.maxWidth = '';
+            (columns[i] ||= []).push(block);
+          }
+        });
+      }
+      const widths = columns.map(blocks => Math.max(...blocks.map(b => lineEnd(b) - b.getBoundingClientRect().left)));
+      // Rounded up, so the lines keep their breaks.
+      columns.forEach((blocks, i) => blocks.forEach(b => { b.style.maxWidth = Math.ceil(widths[i] + 0.5) + 'px'; }));
+      if (table.offsetWidth <= wrap.clientWidth) {
+        table.classList.add('ct-fits');
+        columns.forEach(blocks => blocks.forEach(b => { b.style.maxWidth = ''; }));
+      }
+    }
+
     function syncScrollbar() {
       const wrap = root.querySelector('.ct-wrap'), bar = root.querySelector('.ct-scrollbar');
       if (!wrap || !bar) return;
@@ -754,8 +807,7 @@
       let html = DATA.title ? `<div class="ct-title">${escapeHtml(DATA.title)}</div>` : '';
       html += `<div class="ct-legend">${legendHtml()}</div>`;
 
-      html += `<div class="ct-wrap"><table style="width:max(100%,calc(var(--ct-first-col) + ${V.length} * var(--ct-col)))">`;
-      html += `<colgroup><col style="width:var(--ct-first-col)">${V.map(() => '<col>').join('')}</colgroup>`;
+      html += '<div class="ct-wrap"><table>';
       html += '<thead><tr>';
       html += headerHtml('_sum', 'ct-name', 'Candidate', '', 'Click: sort by summary first (again to stop)');
       html += V.map(c => headerHtml(
@@ -806,6 +858,7 @@
         e.preventDefault();
         bar.scrollLeft += d;
       };
+      fitColumns();
       syncScrollbar();
       highlightCode();
     }
@@ -1015,7 +1068,13 @@
       root.querySelectorAll('.ct-dragged').forEach(el => el.classList.remove('ct-dragged'));
     });
 
-    if (window.ResizeObserver) new ResizeObserver(syncScrollbar).observe(root);
+    if (window.ResizeObserver) {
+      let width;
+      new ResizeObserver(() => {
+        if (root.clientWidth !== width) { width = root.clientWidth; fitColumns(); }
+        syncScrollbar();
+      }).observe(root);
+    }
     render();
   }
 

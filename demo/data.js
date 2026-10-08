@@ -1004,5 +1004,290 @@ window.COMPARE_TABLE_DEMO = [
         }
       }
     ]
+  },
+  {
+    "title": "Constraints",
+    "criteria": [
+      {
+        "id": "budget",
+        "label": "Within budget",
+        "type": "grade",
+        "hard": true,
+        "info": "Under 100 € a year"
+      },
+      {
+        "id": "linux",
+        "label": "Runs on Linux",
+        "type": "grade",
+        "hard": true
+      },
+      {
+        "id": "oss",
+        "label": "Open source",
+        "type": "check",
+        "hard": true,
+        "info": "Under an OSI-approved license"
+      },
+      {
+        "id": "offline",
+        "label": "Works offline",
+        "type": "check",
+        "hard": true
+      },
+      {
+        "id": "ease",
+        "label": "Ease of use",
+        "type": "grade",
+        "soft": true,
+        "info": "Prefer a short learning curve"
+      },
+      {
+        "id": "speed",
+        "label": "Speed",
+        "type": "grade",
+        "soft": true
+      },
+      {
+        "id": "api",
+        "label": "Has an API",
+        "type": "check",
+        "soft": true,
+        "info": "Prefer scriptable tools"
+      },
+      {
+        "id": "dark",
+        "label": "Dark mode",
+        "type": "check",
+        "soft": true
+      },
+      {
+        "id": "community",
+        "label": "Community",
+        "type": "grade",
+        "info": "Size and activity of its community"
+      },
+      {
+        "id": "mobile",
+        "label": "Mobile app",
+        "type": "bool"
+      }
+    ],
+    "candidates": [
+      {
+        "name": "Alpha",
+        "sub": "meets every constraint",
+        "cells": {
+          "budget": {
+            "v": "perfect",
+            "t": "free"
+          },
+          "linux": {
+            "v": "good",
+            "t": "native package"
+          },
+          "oss": {
+            "v": true,
+            "t": "MIT"
+          },
+          "offline": {
+            "v": true,
+            "t": "local-first"
+          },
+          "ease": {
+            "v": "good",
+            "t": "guided setup"
+          },
+          "speed": {
+            "v": "passing",
+            "t": "fine on small files"
+          },
+          "api": {
+            "v": true,
+            "t": "REST and CLI"
+          },
+          "dark": {
+            "v": true,
+            "t": "follows the system"
+          },
+          "community": {
+            "v": "good",
+            "t": "active forum"
+          },
+          "mobile": {
+            "v": true,
+            "t": "Android and iOS"
+          }
+        }
+      },
+      {
+        "name": "Beta",
+        "sub": "breaks hard constraints",
+        "cells": {
+          "budget": {
+            "v": "incompatible",
+            "t": "240 € a year"
+          },
+          "linux": {
+            "v": "passing",
+            "t": "web version only"
+          },
+          "oss": {
+            "v": false,
+            "t": "proprietary"
+          },
+          "offline": {
+            "v": false,
+            "t": "cloud only"
+          },
+          "ease": {
+            "v": "perfect",
+            "t": "no setup"
+          },
+          "speed": {
+            "v": "good",
+            "t": "fast servers"
+          },
+          "api": {
+            "v": false,
+            "t": "none"
+          },
+          "dark": {
+            "v": true,
+            "t": "toggle"
+          },
+          "community": {
+            "v": "weak",
+            "t": "support tickets only"
+          },
+          "mobile": {
+            "v": false,
+            "t": "none"
+          }
+        }
+      },
+      {
+        "name": "Gamma",
+        "sub": "unknowns and missing justifications",
+        "cells": {
+          "budget": {
+            "v": "good",
+            "t": "50 € once"
+          },
+          "linux": {
+            "v": "unknown"
+          },
+          "oss": {
+            "v": null,
+            "t": "license unclear"
+          },
+          "offline": {
+            "v": true
+          },
+          "ease": {
+            "v": "weak",
+            "t": "steep, terminal only"
+          },
+          "api": {
+            "v": true
+          },
+          "dark": {
+            "v": false,
+            "t": "light theme only"
+          },
+          "community": {
+            "v": "unknown",
+            "t": "not checked"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "title": "Column widths",
+    "criteria": [
+      {
+        "id": "kind",
+        "label": "Kind",
+        "type": "cat",
+        "options": {
+          "app": {
+            "emoji": "📱",
+            "label": "app"
+          }
+        }
+      },
+      {
+        "id": "short",
+        "label": "Short texts",
+        "type": "grade",
+        "info": "Narrower than the cap: the column fits its widest text"
+      },
+      {
+        "id": "wraps",
+        "label": "Wrapped texts",
+        "type": "grade",
+        "info": "Wider than the cap: with a scrollbar, the texts wrap and the column fits its longest line; without one, the table takes the full width"
+      },
+      {
+        "id": "wraps2",
+        "label": "More wrapped texts",
+        "type": "grade"
+      },
+      {
+        "id": "wraps3",
+        "label": "Even more wrapped texts",
+        "type": "grade"
+      }
+    ],
+    "candidates": [
+      {
+        "name": "Alpha",
+        "cells": {
+          "kind": {
+            "v": "app"
+          },
+          "short": {
+            "v": "good",
+            "t": "fine"
+          },
+          "wraps": {
+            "v": "good",
+            "t": "comprehensive cross-referencing"
+          },
+          "wraps2": {
+            "v": "good",
+            "t": "internationalization, accessibility"
+          },
+          "wraps3": {
+            "v": "passing",
+            "t": "documentation underwhelming"
+          }
+        }
+      },
+      {
+        "name": "Beta",
+        "cells": {
+          "kind": {
+            "v": "app"
+          },
+          "short": {
+            "v": "weak",
+            "t": "a bit slow"
+          },
+          "wraps": {
+            "v": "weak",
+            "t": "occasional misattributions"
+          },
+          "wraps2": {
+            "v": "weak",
+            "t": "unmaintained dependencies"
+          },
+          "wraps3": {
+            "v": "bad",
+            "t": "incomprehensible configuration"
+          }
+        }
+      }
+    ]
   }
 ];
