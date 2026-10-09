@@ -33,6 +33,10 @@ _The inline widget, as shown in the Claude app.
 Open [the widget itself](https://cryhot.github.io/agent-skill-compare-options/demo/tools-for-comparing-options.html), as downloaded from the conversation._
 
 
+> [!TIP]
+> More demos [here](https://cryhot.github.io/agent-skill-compare-options/demo/)!
+
+
 
 ## Install
 
