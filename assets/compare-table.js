@@ -87,6 +87,8 @@
 .ct table.ct-fits { width: 100%; }
 .ct .ct-name { width: var(--ct-first-col); }
 .ct .ct-name > * { max-width: var(--ct-first-col); }
+.ct table.ct-fits .ct-name { width: auto; min-width: var(--ct-first-col); }
+.ct table.ct-fits .ct-name > * { max-width: none; }
 .ct table:not(.ct-fits) td:not(.ct-name) > *, .ct table:not(.ct-fits) th:not(.ct-name) > .ct-head { max-width: var(--ct-col); }
 .ct th, .ct td { padding: 6px 8px 6px 6px;border-bottom: 0.5px solid var(--ct-border); vertical-align: top; text-align: left; line-height: 1.35; }
 .ct td:not(.ct-name), .ct th:not(.ct-name) { transform: translateX(calc(var(--ct-scroll, 0px) * -1)); }
