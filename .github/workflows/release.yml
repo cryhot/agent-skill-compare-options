@@ -14,23 +14,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # claude.ai wants the skill's folder, named after the skill, at the top of the zip.
-      - name: Pack the skill
-        run: git archive --prefix=compare-options/ -o compare-options.zip HEAD
-
-      - name: Check the zip
+      # The skill's name, from the frontmatter of SKILL.md, names the zip and its folder.
+      - name: 👀 Read the skill's name
         run: |
-          unzip -l compare-options.zip
-          unzip -l compare-options.zip | grep -q ' compare-options/SKILL\.md$'
+          name=$(sed -n '2,/^---/{s/^name:[[:space:]]*//p}' SKILL.md | head -n 1 | tr -d "\"'\r ")
+          [[ $name =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "::error::No valid skill name in the frontmatter of SKILL.md: '$name'"; exit 1; }
+          echo "SKILL_NAME=$name" >> "$GITHUB_ENV"
+
+      # claude.ai wants the skill's folder, named after the skill, at the top of the zip.
+      - name: 📦 Pack the skill
+        run: git archive --prefix="$SKILL_NAME/" -o "$SKILL_NAME.zip" HEAD
+
+      - name: 🧪 Check the zip
+        run: |
+          unzip -l "$SKILL_NAME.zip"
+          unzip -l "$SKILL_NAME.zip" | grep -q -- " $SKILL_NAME/SKILL\.md\$"
 
       # Re-running on an existing release replaces its zip.
-      - name: Publish the release
+      - name: 📤 Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
-            gh release upload "$TAG" compare-options.zip --clobber
+            gh release upload "$TAG" "$SKILL_NAME.zip" --clobber
           else
-            gh release create "$TAG" compare-options.zip --title "$TAG" --generate-notes --verify-tag
+            gh release create "$TAG" "$SKILL_NAME.zip" --title "$TAG" --generate-notes --verify-tag
           fi
