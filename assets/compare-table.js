@@ -837,6 +837,14 @@
           root.querySelector('.ct-scrollbar').scrollLeft = state.x;
         }
       }
+      // The whole cell scrolls into the table, under its sticky header; a cell taller than that shows its top.
+      const wrap = root.querySelector('.ct-wrap');
+      if (td && wrap) {
+        const cell = td.getBoundingClientRect(), view = wrap.getBoundingClientRect();
+        const top = view.top + wrap.clientTop + wrap.querySelector('thead').offsetHeight, bottom = view.top + wrap.clientTop + wrap.clientHeight;
+        if (cell.top < top) wrap.scrollTop += cell.top - top;
+        else if (cell.bottom > bottom) wrap.scrollTop += Math.min(cell.bottom - bottom, cell.top - top);
+      }
       mark.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
 
