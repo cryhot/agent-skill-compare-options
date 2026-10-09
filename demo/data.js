@@ -1289,5 +1289,72 @@ window.COMPARE_TABLE_DEMO = [
         }
       }
     ]
+  },
+  {
+    "title": "Long details",
+    "criteria": [
+      {
+        "id": "maint",
+        "label": "Maintenance",
+        "type": "grade",
+        "info": "Click a mark of this column to open a details box of each length"
+      }
+    ],
+    "candidates": [
+      {
+        "name": "1 · No details",
+        "sub": "text of the cell only",
+        "cells": {
+          "maint": {
+            "v": "good",
+            "t": "active, with quarterly releases"
+          }
+        }
+      },
+      {
+        "name": "2 · A few lines",
+        "sub": "fits anywhere",
+        "cells": {
+          "maint": {
+            "v": "good",
+            "t": "slowing down",
+            "d": "Releases came every quarter until 2024, then slowed down.\n\nThe maintainers explained the gap in the changelog, and the issue tracker stayed active."
+          }
+        }
+      },
+      {
+        "name": "3 · Long",
+        "sub": "scrolls in a short window",
+        "cells": {
+          "maint": {
+            "v": "good",
+            "t": "slowing down",
+            "d": "## Findings\n\nReleases came roughly every quarter until 2024, then slowed down, with a long gap before the latest one. The maintainers explained the gap in the changelog, and the issue tracker stayed active.\n\n- Releases: 14 in 2022, 9 in 2023, 4 in 2024, 2 in 2025\n- Open issues: 212, of which 31 are labeled as bugs\n- Median time to a first answer: 2 days\n\n## Caveats\n\nThe documentation covers the common cases well, but the advanced configuration is only described in the issue tracker, and in a few blog posts, some of them outdated."
+          }
+        }
+      },
+      {
+        "name": "4 · Very long",
+        "sub": "always scrolls in a page",
+        "cells": {
+          "maint": {
+            "v": "good",
+            "t": "slowing down",
+            "d": "## Findings\n\nThe first review looked at the project's **maintenance** over several years: releases came roughly every quarter until 2024, then slowed down, with a long gap before the latest one. The maintainers explained the gap in the changelog, and the issue tracker stayed active.\n\n- Releases: 14 in 2022, 9 in 2023, 4 in 2024, 2 in 2025\n- Open issues: 212, of which 31 are labeled as bugs\n- Median time to a first answer on an issue: 2 days\n- Contributors with more than 10 commits: 6\n- Open pull requests: 18, the oldest from 2023\n\n## What the tests showed\n\nRunning the same scenario on three machines gave consistent results, apart from the first start, which took much longer on the slowest one because of the initial indexing. The command below reproduces it:\n\n```bash\nmytool index --all ~/documents && mytool search \"invoice 2025\" --limit 20\n```\n\nThe second run, once the index existed, took under a second on every machine. Deleting the index and running again gave the same timings, so the slowness is not caused by a stale cache.\n\n## Caveats\n\nThe documentation covers the common cases well, but the advanced configuration is only described in the issue tracker and in a few blog posts, some of which are outdated. Several options silently ignore unknown values instead of reporting an error, which makes typos hard to notice.\n\n> The maintainers said they plan a rewrite of the configuration layer, with no date given.\n\n## Compatibility\n\n- Linux: packaged by most distributions, with the previous major version in the stable ones\n- macOS: available through the usual package manager, with a native build for recent chips\n- Windows: only through a compatibility layer, unsupported by the maintainers\n\n## Security\n\nNo vulnerability has been reported in the last three years, but the project has no policy for reporting one, and its dependencies are updated by hand, a few times a year. One dependency was flagged by an audit tool during the review, without a known way to exploit it here.\n\n## Cost\n\nFree and open source, with an optional paid plan for the hosted synchronization service. The plan's price changed twice since 2023, each time announced a month ahead.\n\n## Recommendation\n\nFine for personal use today. For a team, check first that the missing options are not needed, pin the version in the setup scripts to avoid surprises when the rewrite lands, and plan to review the choice again after it.",
+            "src": [
+              {
+                "u": "https://example.com/changelog",
+                "t": "Changelog"
+              },
+              {
+                "u": "https://example.com/issues",
+                "t": "Issue tracker"
+              },
+              "https://example.com/blog/2025/review"
+            ]
+          }
+        }
+      }
+    ]
   }
 ];

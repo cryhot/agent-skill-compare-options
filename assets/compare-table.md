@@ -16,7 +16,7 @@ replace the `<script src="…">` line with `<script>`, the content of `compare-t
 - **Artifact or local HTML file**: wrap it in a full HTML document, with a `<title>`,
   `:root{color-scheme:light dark}` and a `body` background (eg. `Canvas`), so that the table colors match the page.
   Without `sendPrompt`, the markdown button shows the markdown under the table, and the other action buttons are not shown.
-  The table then takes the height of the page, except for the details and the actions.
+  The table then takes the height of the page, except for the details (which scroll inside when long) and the actions.
 - To restore a view, put the state sent by the artifact button in `view`.
 
 

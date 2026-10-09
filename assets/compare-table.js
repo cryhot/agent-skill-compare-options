@@ -157,8 +157,15 @@
 
 /* Details box, below the table. Its close button is centered on the box's rounded corner. */
 .ct .ct-hint { margin: 8px 8px 0; font-size: 11px; color: var(--ct-text-3); }
-.ct .ct-details { position: relative; margin: 16px 8px 10px; padding: 10px 40px 12px 14px; border: 0.5px solid var(--ct-border-strong); border-radius: 16px; font-size: 13px; box-shadow: 0 0 6px 1px var(--ct-halo); }
+.ct .ct-details { position: relative; margin: 16px 8px 10px; border: 0.5px solid var(--ct-border-strong); border-radius: 16px; font-size: 13px; box-shadow: 0 0 6px 1px var(--ct-halo); }
+.ct .ct-details-body { padding: 10px 40px 12px 14px; }
 .ct .ct-details hr { border: none; border-top: 0.5px solid var(--ct-border-strong); margin: 6px -26px 6px 0; }
+/* In a page, a long details box scrolls inside, instead of squeezing the table. */
+.ct.ct-page > .ct-details { flex: 0 1 auto; min-height: 60px; display: flex; flex-direction: column; }
+.ct.ct-page .ct-details-body { min-height: 0; max-height: 40vh; overflow-y: auto; scrollbar-width: thin; border-radius: inherit; }
+.ct.ct-page .ct-details.ct-scrolls .ct-close { right: 14px; }
+/* A flex container does not collapse the margins of its children: the details' bottom margin and the actions' top margin stay as one gap. */
+.ct.ct-page > .ct-details + .ct-actions { margin-top: 2px; }
 .ct .ct-close { position: absolute; top: 3.5px; right: 3.5px; width: 24px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 0.5px solid var(--ct-border-strong); border-radius: 50%; font-size: 15px; line-height: 1; color: var(--ct-text-2); cursor: pointer; }
 .ct .ct-close:hover { background: #E53935; border-color: #E53935; color: #fff; }
 .ct .ct-link { cursor: pointer; }
@@ -664,11 +671,12 @@
 
       return `<div class="ct-details"${o.color ? ` style="--ct-halo-color:${o.color}"` : ''}>` +
         '<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="Close details" title="Close (Esc)">×</span>' +
+        '<div class="ct-details-body">' +
         `<div style="font-weight:500">${path.join(' <span class="ct-dim">&gt;</span> ')}</div>` +
         `<div style="margin-top:2px">${status.join('<span class="ct-muted"> · </span>')}</div>` +
         (o.body ? `<hr><div class="ct-markdown">${markdown(o.body)}</div>` : '') +
         sourcesHtml(o.sources) +
-        '</div>';
+        '</div></div>';
     }
 
 
@@ -742,6 +750,9 @@
       for (const table of document.querySelectorAll('.ct')) tables += heightOf(table);
       const rest = Math.max(0, heightOf(document.documentElement) - tables);
       root.style.maxHeight = Math.max(240, Math.floor(document.documentElement.clientHeight - rest)) + 'px';
+      // The close cross steps aside when the details scroll, to leave their scrollbar free.
+      const box = root.querySelector('.ct-details'), body = box && box.querySelector('.ct-details-body');
+      if (box) box.classList.toggle('ct-scrolls', body.scrollHeight > body.clientHeight);
     }
 
 
