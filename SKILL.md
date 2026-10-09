@@ -11,6 +11,13 @@ Find what already exists, rate it honestly against the user's need, and say what
 The method is domain-agnostic: keep the criteria that make sense for the domain, and drop the others.
 When the user already gives the options, still search for close alternatives they may have missed, unless told not to.
 
+Before you start, decide how you will report, as it changes what to collect:
+- check whether this harness can render an inline widget or an HTML artifact,
+- if so, read [`assets/compare-table.md`](assets/compare-table.md) now:
+  the data format shows what each cell can hold (text, details, sources, variants),
+  and the [report](#4-report) can afford more criteria than a markdown table,
+- plan to use it, unless the user asks for markdown.
+
 
 ## 1. Frame the need
 
@@ -121,8 +128,12 @@ Keep the relevant ones, and add those specific to the need:
    - Wrap long cell content with `<br>`.
    - When a candidate has close variants that differ on some criteria, keep one row,
      and in those cells put one line per variant, each starting with its own emoji and naming the variant.
-   - When the harness can show interactive views, render the tables with [`assets/compare-table.html`](assets/compare-table.html) instead,
-     following [`assets/compare-table.md`](assets/compare-table.md), unless the user asks for markdown.
+   - **Render the tables as an interactive view by default**, instead of markdown.
+     The files are in this skill's [`assets/`](assets/) directory: before rendering, read with your file tool
+     [`assets/compare-table.md`](assets/compare-table.md) (the data format) and [`assets/compare-table.html`](assets/compare-table.html) (the template),
+     then show the result with the harness's inline widget tool (eg. `show_widget`) or an HTML artifact.
+     Fall back to markdown tables only if the user asks for markdown, the harness cannot show HTML, or rendering fails.
+     Say which format you used, in one line.
      Prefer an inline widget, shown in the conversation;
      publish an artifact or write an HTML file only when the user asks, or wants to share or keep the comparison.
      Its export button gives them the markdown when they need it.
