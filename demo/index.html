@@ -5,28 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>compare-options demo</title>
 <style>
-  :root { color-scheme: light dark; }
+  :root { color-scheme: light dark; --demo-blue: #1a5fd0; --demo-edge: color-mix(in srgb, currentColor 35%, transparent); }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --demo-blue: #6ca6ff; } }
+  :root[data-theme="dark"] { --demo-blue: #6ca6ff; }
+
   body { margin: 0 auto; padding: 16px; max-width: 760px; font-family: system-ui, sans-serif; background: Canvas; color: CanvasText; }
-  .demo-bar { margin: 0 0 16px; font-size: 12px; opacity: .8; }
+  /* Both bars stay in place, above the tables: their parts that have a z-index would otherwise show over them. */
+  .demo-bar { position: sticky; top: 0; z-index: 100; margin: -16px -16px 16px; padding: 12px 16px 8px; border-bottom: 0.5px solid var(--demo-edge); background: Canvas; font-size: 12px; }
+  .demo-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; }
+  .demo-line + .demo-line { margin-top: 4px; }
   .demo-bar a { color: inherit; }
-  .ct + .ct { margin-top: 32px; }
-  #prompts { margin-top: 24px; padding: 8px; border: 1px dashed currentColor; font-size: 11px; white-space: pre-wrap; }
+  .demo-bar a[aria-current] { color: var(--demo-blue); }
+  .demo-switch { display: inline-flex; border: 0.5px solid var(--demo-edge); border-radius: 999px; overflow: hidden; }
+  .demo-switch a { padding: 1px 10px; text-decoration: none; }
+  .demo-switch a[aria-current] { background: color-mix(in srgb, currentColor 18%, transparent); color: inherit; }
+
+  /* A full page: only the table, as in a downloaded artifact. */
+  body.full { margin: 0; padding: 0; max-width: none; }
+
+  .demo-table { position: relative; }
+  .demo-table + .demo-table { margin-top: 32px; }
+  .demo-full { position: absolute; z-index: 1; top: 6px; right: 0; font-size: 11px; color: inherit; opacity: .7; }
+
+  /* The buttons look like those the host of an inline widget provides. */
+  button { padding: 4px 10px; border: 0.5px solid var(--demo-edge); border-radius: 8px; background: transparent; color: inherit; font-family: inherit; }
+  button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+
+  /* The simulated prompt bar of the chat, at the bottom of the window in widget mode. */
+  body.widget-mode { display: flex; flex-direction: column; box-sizing: border-box; min-height: 100vh; }
+  .demo-prompt { position: sticky; bottom: 0; z-index: 100; margin: auto -16px -16px; padding: 12px 16px 12px; border-top: 0.5px solid var(--demo-edge); background: Canvas; }
+  .demo-table:last-of-type { margin-bottom: 24px; }
+  .demo-prompt textarea { display: block; width: 100%; box-sizing: border-box; max-height: 30vh; resize: none; padding: 8px 12px; border: 0.5px solid var(--demo-edge); border-radius: 12px; background: transparent; color: inherit; font: inherit; font-size: 13px; }
+  .demo-prompt textarea::placeholder { color: GrayText; }
+  /* The checkbox on the left, the note centered when there is room, on the same line (stacked in a very narrow window). */
+  .demo-foot { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); align-items: center; gap: 2px 12px; margin-top: 4px; font-size: 11px; }
+  .demo-foot label { justify-self: start; opacity: .7; }
+  .demo-note { color: GrayText; text-align: center; }
+  @media (max-width: 460px) { .demo-foot { grid-template-columns: 1fr; } .demo-note { text-align: left; } }
 </style>
 </head>
 <body>
-<div class="demo-bar">
-  Mode: <a href="?">standalone page</a> · <a href="?widget">widget</a>, with the prompts printed below
-  · Table script: <a href="?">local</a> · <a href="?table=1">latest release</a>
-</div>
-<script>
-  // In widget mode, the action buttons print the prompt they would send to the chat.
-  if (new URLSearchParams(location.search).has('widget')) {
-    window.sendPrompt = text => {
-      const log = document.getElementById('prompts') || document.body.appendChild(Object.assign(document.createElement('pre'), { id: 'prompts' }));
-      log.textContent += '› ' + text + '\n\n';
-    };
-  }
-</script>
+<div class="demo-bar"></div>
 <script src="data.js"></script>
 <script src="demo.js"></script>
 </body>

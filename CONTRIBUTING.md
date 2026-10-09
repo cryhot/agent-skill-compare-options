@@ -8,7 +8,12 @@ Serve the repository, then open <http://localhost:8000/demo/>:
 python3 -m http.server 8000
 ```
 The demo renders [`demo/data.js`](demo/data.js) with your local [`assets/compare-table.js`](assets/compare-table.js): reload it after each change.
-Add `?widget` to its address to print the prompts the action buttons send, or `?table=1` to load the latest release instead.
+Its bar changes one key of the address at a time, and leaves the others untouched:
+- `mode=widget|artifact` simulates where the tables are shown: an inline widget, which is the default, with an editable prompt bar that the action buttons fill, or an artifact, a page of its own,
+- `v=<version>` loads that release of the table script from jsDelivr, eg. `v=1` for the latest one,
+- `title=<text>` renders only the tables whose title contains it,
+- `theme=light|dark` forces the colors, instead of following the system,
+- `full`, which the _full page_ link next to each table sets, renders only the first matching table, as a page of its own: no bar and no margin.
 
 
 ## Commit messages
