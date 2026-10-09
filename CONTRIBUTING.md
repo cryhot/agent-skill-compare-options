@@ -46,3 +46,10 @@ When another change cannot be split, list its scopes separated by commas too.
 
 A change that breaks the data format of tables already written adds a `BREAKING CHANGE:` line at the end of the commit body.
 It calls for a new major version, as widgets load the table script from the latest release of their major version.
+
+
+## Releases
+
+Pushing a tag `vX.Y.Z` runs [`release.yml`](.github/workflows/release.yml), which attaches the skill's zip to the release.
+The zip leaves out what only matters to the repository: [`.gitattributes`](.gitattributes) lists it with the `skill-ignore` attribute, so mark a new file that is not part of the skill there.
+GitHub's own _Source code_ archives keep everything.

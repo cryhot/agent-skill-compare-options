@@ -1,4 +1,9 @@
-# Left out of the release zip.
-.github export-ignore
-.gitattributes export-ignore
-demo export-ignore
+# Left out of the skill's zip, which only holds what the skill needs.
+# GitHub's "Source code" archives keep everything.
+/.github         skill-ignore
+/.gitattributes  skill-ignore
+/README.md       skill-ignore
+/CONTRIBUTING.md skill-ignore
+/demo            skill-ignore
+AGENTS.md        skill-ignore
+CLAUDE.md        skill-ignore
