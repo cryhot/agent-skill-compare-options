@@ -52,4 +52,5 @@ It calls for a new major version, as widgets load the table script from the late
 
 Pushing a tag `vX.Y.Z` runs [`release.yml`](.github/workflows/release.yml), which attaches the skill's zip to the release.
 The zip leaves out what only matters to the repository: [`.gitattributes`](.gitattributes) lists it with the `skill-ignore` attribute, so mark a new file that is not part of the skill there.
+It also gets a tiny `README.md` of its own, which links back to the repository at the release's version.
 GitHub's own _Source code_ archives keep everything.

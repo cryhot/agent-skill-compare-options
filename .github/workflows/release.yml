@@ -23,12 +23,17 @@ jobs:
 
       # claude.ai wants the skill's folder, named after the skill, at the top of the zip.
       - name: 📦 Pack the skill
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
           # What the skill's zip leaves out: the tracked files and directories marked with the skill-ignore attribute.
           # Git does not carry an attribute from a directory to its files, so each file's directories are checked too.
           mapfile -t ignored < <(git ls-files | awk '{ print; while (sub(/\/[^\/]*$/, "")) print }' | sort -u | git check-attr --stdin skill-ignore | sed -n 's/: skill-ignore: set$//p')
           args=(); for path in "${ignored[@]}"; do args+=(":(exclude,literal)$path"); done
-          git archive --prefix="$SKILL_NAME/" -o "$SKILL_NAME.zip" HEAD -- . "${args[@]}"
+          # A tiny README, in place of the repository's, points back to the repository at this version.
+          repo_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          printf '# %s\n\nVersion [%s](%s/tree/%s) of the skill: %s\n' "$SKILL_NAME" "$TAG" "$repo_url" "$TAG" "$repo_url" > "$RUNNER_TEMP/README.md"
+          git archive --prefix="$SKILL_NAME/" --add-file="$RUNNER_TEMP/README.md" -o "$SKILL_NAME.zip" HEAD -- . "${args[@]}"
 
       - name: 🧪 Check the zip
         run: |
