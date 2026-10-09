@@ -17,6 +17,7 @@
   --ct-tint-strong: color-mix(in srgb, var(--text-primary, #1f1f1d) 14%, var(--ct-surface));
   --ct-first-col: 190px;
   --ct-col: 150px;
+  --ct-max-height: 600px;
   /* syntax coloring, after Atom One Light */
   --ct-syntax-keyword: #a626a4;
   --ct-syntax-string: #50a14f;
@@ -78,8 +79,15 @@
 .ct .ct-chip { display: inline-flex; gap: 4px; align-items: center; padding: 1px 6px; border: 1px solid transparent; border-radius: var(--radius, 8px); cursor: pointer; }
 .ct .ct-chip.ct-off { border-color: var(--ct-border-strong); text-decoration: line-through; }
 
-/* Table: clipped instead of scrolling; the cells after the name column shift by --ct-scroll. */
-.ct .ct-wrap { overflow-x: hidden; overflow-x: clip; }
+/* Table: clipped horizontally instead of scrolling (the cells after the name column shift by --ct-scroll),
+   and scrolling vertically within a limited height: --ct-max-height in a widget,
+   and in a page (where the chat cannot be prompted) the page's height, without the details and the actions. */
+.ct .ct-wrap { overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; }
+.ct:not(.ct-page) .ct-wrap { max-height: var(--ct-max-height); }
+.ct.ct-page { display: flex; flex-direction: column; box-sizing: border-box; max-height: 100vh; max-height: 100dvh; }
+.ct.ct-page > * { flex: none; }
+.ct.ct-page > .ct-wrap { flex: 0 1 auto; min-height: 120px; }
+.ct.ct-page .ct-markdown-export { max-height: 25vh; overflow: auto; }
 .ct table { border-collapse: collapse; width: max-content; }
 /* With a scrollbar, the columns fit their content up to --ct-col (see fitColumns),
    through their inner blocks as browsers ignore max-width on columns and cells.
@@ -226,6 +234,7 @@
     const HINT = 'Click an emoji for info, then arrows to navigate  ·  Click a criterion to sort, drag to reorder  ·  Click a label or group to hide';
 
     const canPrompt = typeof sendPrompt === 'function';
+    if (!canPrompt) root.classList.add('ct-page');
     const title = DATA.title || 'comparison';
     const criterionIds = DATA.criteria.map(c => c.id);
     const asList = x => Array.isArray(x) ? x : [];
@@ -722,6 +731,20 @@
     }
 
 
+    // ── Height in a page ──────────────────────────────────────────────────
+
+    // In a page, the tables are limited to the window's height minus what the rest of the page takes
+    // (margins, paddings, other content), so that the page itself does not scroll.
+    function fitPage() {
+      if (canPrompt) return;
+      const heightOf = el => el.getBoundingClientRect().height;
+      let tables = 0;
+      for (const table of document.querySelectorAll('.ct')) tables += heightOf(table);
+      const rest = Math.max(0, heightOf(document.documentElement) - tables);
+      root.style.maxHeight = Math.max(240, Math.floor(document.documentElement.clientHeight - rest)) + 'px';
+    }
+
+
     // ── Horizontal scrolling ──────────────────────────────────────────────
 
     function setScroll(x) {
@@ -776,7 +799,8 @@
       if (!wrap || !bar) return;
       const table = wrap.querySelector('table');
       bar.style.display = table.offsetWidth > wrap.clientWidth ? '' : 'none';
-      bar.firstChild.style.width = table.offsetWidth + 'px';
+      // The bar spans the table's vertical scrollbar too, so its scrolling range is the table's.
+      bar.firstChild.style.width = (table.offsetWidth + wrap.offsetWidth - wrap.clientWidth) + 'px';
       setScroll(state.x);
       bar.scrollLeft = state.x;
     }
@@ -850,9 +874,17 @@
       if (state.showMarkdown) html += `<pre class="ct-markdown-export">${escapeHtml(markdownExport())}</pre>`;
       html += '<div class="ct-drop-line"></div>';
 
+      // The table is rebuilt, but not scrolled back to its top.
+      const scrollTop = (root.querySelector('.ct-wrap') || {}).scrollTop || 0;
       root.innerHTML = html;
 
       const wrap = root.querySelector('.ct-wrap'), bar = root.querySelector('.ct-scrollbar');
+      fitPage();
+      wrap.scrollTop = scrollTop;
+      // The sticky header must not hide what scrolls into view under it.
+      wrap.style.scrollPaddingTop = wrap.querySelector('thead').offsetHeight + 'px';
+      // The shifts are made by --ct-scroll: the browser must not scroll the clipped table by itself (eg. to a focus).
+      wrap.onscroll = () => { if (wrap.scrollLeft) wrap.scrollLeft = 0; };
       bar.onscroll = () => setScroll(bar.scrollLeft);
       wrap.onwheel = e => {
         const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
@@ -1070,6 +1102,7 @@
       root.querySelectorAll('.ct-dragged').forEach(el => el.classList.remove('ct-dragged'));
     });
 
+    window.addEventListener('resize', fitPage);
     if (window.ResizeObserver) {
       let width;
       new ResizeObserver(() => {

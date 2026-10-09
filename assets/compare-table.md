@@ -12,10 +12,11 @@ replace the `<script src="…">` line with `<script>`, the content of `compare-t
 
 - **Inline widget** (desktop app, claude.ai): pass the result as the widget code.
   The action buttons then send a prompt back to the chat, and show whether it was sent.
-  The page scrolls outside the widget, so the header row only sticks to the top in an artifact or a local file.
+  The table is limited in height, and scrolls inside, with its header row kept at the top.
 - **Artifact or local HTML file**: wrap it in a full HTML document, with a `<title>`,
   `:root{color-scheme:light dark}` and a `body` background (eg. `Canvas`), so that the table colors match the page.
   Without `sendPrompt`, the markdown button shows the markdown under the table, and the other action buttons are not shown.
+  The table then takes the height of the page, except for the details and the actions.
 - To restore a view, put the state sent by the artifact button in `view`.
 
 
