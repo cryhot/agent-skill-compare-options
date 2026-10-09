@@ -642,6 +642,12 @@
         });
       }
       o.who = `"${cd.name}"` + (o.showVariant ? ` › "${variant ? variant.name : u.name}"` : '');
+      // The candidate button explores the candidate, or its variant, in the color of its summary. The variant is the selected one,
+      // or the one the cursor still remembers while it moves over the ratings that all the variants share.
+      const remembered = !o.showVariant && state.variantMemoryRow === +ci && state.variantMemory != null ? variantsOf(cd)[state.variantMemory] : null;
+      const explored = o.showVariant ? u : remembered;
+      o.exploreWho = `"${cd.name}"` + (explored ? ` › "${explored.name}"` : '');
+      o.whoColor = SCALE[scaleKeyOf(explored ? variantSummary(explored) : candidateSummary(variantsOf(cd)))].color;
       return o;
     }
 
@@ -866,7 +872,7 @@
 
       html += sel ? detailsHtml(sel) : `<div class="ct-hint">${HINT}</div>`;
 
-      const halo = sel && sel.color ? ` style="--ct-halo-color:${sel.color}"` : '';
+      const halo = color => color ? ` style="--ct-halo-color:${color}"` : '';
       html += '<div class="ct-actions">';
       html += canPrompt
         ? '<button data-action="markdown" title="Send this view (filters, order, hidden criteria) to the chat as a markdown table">Export as markdown ↗</button>'
@@ -875,10 +881,10 @@
         html += '<button data-action="artifact" title="Ask Claude to publish the whole report as a shareable artifact page, keeping this table\'s view">Export as artifact ↗</button>';
       }
       if (canPrompt && sel) {
-        html += `<button class="ct-halo-button" data-action="candidate"${halo} title="Ask Claude to research ${escapeHtml(sel.who)} in more depth">Explore candidate ↗</button>`;
+        html += `<button class="ct-halo-button" data-action="candidate"${halo(sel.whoColor)} title="Ask Claude to research ${escapeHtml(sel.exploreWho)} in more depth">Explore candidate ↗</button>`;
       }
       if (canPrompt && sel && sel.type === 'c') {
-        html += `<button class="ct-halo-button" data-action="evaluation"${halo} title="Ask Claude to dig into the &quot;${escapeHtml(sel.criterion.label)}&quot; rating of ${escapeHtml(sel.who)}">Explore evaluation ↗</button>`;
+        html += `<button class="ct-halo-button" data-action="evaluation"${halo(sel.color)} title="Ask Claude to dig into the &quot;${escapeHtml(sel.criterion.label)}&quot; rating of ${escapeHtml(sel.who)}">Explore evaluation ↗</button>`;
       }
       if (state.flash) html += `<span class="ct-muted" style="align-self:center;font-size:12px">${escapeHtml(state.flash)}</span>`;
       html += '</div>';
@@ -964,7 +970,7 @@
       } else if (d.action === 'artifact') {
         send(`Publish the comparison report as an artifact, with all its tables. Restore the "${title}" table in this view state: ` + JSON.stringify(viewState()));
       } else if (d.action === 'candidate') {
-        send(`Explore ${selection().who} in more depth, from the "${title}" comparison.`);
+        send(`Explore ${selection().exploreWho} in more depth, from the "${title}" comparison.`);
       } else if (d.action === 'evaluation') {
         const o = selection();
         send(`Explore the "${o.criterion.label}" evaluation of ${o.who}, from the "${title}" comparison. ` +
