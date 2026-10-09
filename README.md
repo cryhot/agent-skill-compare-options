@@ -81,16 +81,7 @@ On [claude.ai](https://claude.ai), upload the zip of the latest release again.
 - [`assets/compare-table.js`](assets/compare-table.js): the interactive table itself, which the template loads from jsDelivr.
 - [`assets/compare-table.md`](assets/compare-table.md): its data format, and what the user can do with it.
 - [`demo/`](demo/): a demo of the interactive table, left out of the release zip.
-
-
-## Development
-
-Serve the repository, then open <http://localhost:8000/demo/>:
-```sh
-python3 -m http.server 8000
-```
-The demo renders [`demo/data.js`](demo/data.js) with your local [`assets/compare-table.js`](assets/compare-table.js): reload it after each change.
-Add `?widget` to its address to print the prompts the action buttons send, or `?table=1` to load the latest release instead.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): how to develop the skill, and how to write the commits.
 
 
 ## Known limitations
