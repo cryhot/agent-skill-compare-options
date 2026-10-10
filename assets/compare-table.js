@@ -91,19 +91,22 @@
 .ct table { border-collapse: collapse; width: max-content; }
 /* With a scrollbar, the columns fit their content up to --ct-col (see fitColumns),
    through their inner blocks as browsers ignore max-width on columns and cells.
-   Without one, the table takes the full width, and the texts wrap to the columns. */
+   Without one, the table takes the full width, and the texts wrap to the columns.
+   The candidate column wraps its texts at --ct-first-col, and one that cannot wrap widens it, up to 35% of the frame
+   (--ct-name-cap): beyond it, the text is clipped, and the column scrolls on its own (see syncScrollbar). */
 .ct table.ct-fits { width: 100%; }
-.ct .ct-name { width: var(--ct-first-col); }
-.ct .ct-name > * { max-width: var(--ct-first-col); }
-.ct table.ct-fits .ct-name { width: auto; min-width: var(--ct-first-col); }
-.ct table.ct-fits .ct-name > * { max-width: none; }
+.ct .ct-name-in { overflow: hidden; margin: -4px; padding: 4px; width: var(--ct-name-w, var(--ct-first-col)); }
+.ct table.ct-fits .ct-name-in { width: auto; min-width: var(--ct-name-w, var(--ct-first-col)); max-width: var(--ct-name-cap, none); }
 .ct table:not(.ct-fits) td:not(.ct-name) > *, .ct table:not(.ct-fits) th:not(.ct-name) > .ct-head { max-width: var(--ct-col); }
 .ct th, .ct td { padding: 6px 8px 6px 6px;border-bottom: 0.5px solid var(--ct-border); vertical-align: top; text-align: left; line-height: 1.35; }
 .ct td:not(.ct-name), .ct th:not(.ct-name) { transform: translateX(calc(var(--ct-scroll, 0px) * -1)); }
 .ct .ct-name, .ct thead th { background: var(--ct-tint); }
 .ct .ct-name { position: relative; z-index: 2; }
-.ct .ct-scrollbar { position: sticky; bottom: 0; z-index: 5; overflow-x: auto; overflow-y: hidden; background: var(--ct-surface); }
-.ct .ct-scrollbar div { height: 1px; }
+.ct .ct-bars { position: sticky; bottom: 0; z-index: 5; display: flex; background: var(--ct-surface); }
+.ct .ct-name-bar, .ct .ct-scrollbar { overflow-x: auto; overflow-y: hidden; }
+.ct .ct-name-bar { flex: none; }
+.ct .ct-scrollbar { flex: 1 1 0; min-width: 0; }
+.ct .ct-name-bar div, .ct .ct-scrollbar div { height: 1px; }
 
 /* Header row: sticky, sortable, draggable, with a hide cross on hover. */
 .ct th { font-weight: 500; font-size: 12px; color: var(--ct-text-2); }
@@ -260,6 +263,7 @@
       variantMemoryRow: null,  // …in this candidate's row
       drag: null,              // id of the criterion being dragged
       x: 0,                    // horizontal scroll
+      nx: 0,                   // horizontal scroll of the candidate column
       showMarkdown: false,     // markdown export shown under the table
       flash: null,             // error message from the last action
     };
@@ -793,6 +797,17 @@
         return right;
       }
       table.classList.remove('ct-fits');
+      // The candidate column first: its texts wrap at --ct-first-col, and the longest line, which can be a word
+      // that cannot wrap, sets its width, between --ct-first-col and 35% of the frame.
+      table.style.removeProperty('--ct-name-w');
+      const base = parseFloat(getComputedStyle(root).getPropertyValue('--ct-first-col')) || 190;
+      const cap = Math.floor(wrap.clientWidth * 0.35);
+      let reach = 0;
+      for (const box of table.querySelectorAll('.ct-name-in')) {
+        for (const block of box.querySelectorAll(':scope > .ct-line')) reach = Math.max(reach, lineEnd(block) - block.getBoundingClientRect().left);
+      }
+      table.style.setProperty('--ct-name-w', Math.min(Math.max(Math.ceil(reach + 0.5), base), cap) + 'px');
+      table.style.setProperty('--ct-name-cap', cap + 'px');
       for (const row of table.rows) {
         [...row.cells].forEach((cell, i) => {
           if (cell.classList.contains('ct-name')) return;
@@ -811,13 +826,29 @@
       }
     }
 
+    function setNameScroll(x) {
+      state.nx = x;
+      for (const box of root.querySelectorAll('.ct-name-in')) box.scrollLeft = x;
+    }
+
+    // Two bars: the first one scrolls the candidate column alone, when a text is clipped there,
+    // the second one the other columns, in the room left.
     function syncScrollbar() {
-      const wrap = root.querySelector('.ct-wrap'), bar = root.querySelector('.ct-scrollbar');
+      const wrap = root.querySelector('.ct-wrap'), bar = root.querySelector('.ct-scrollbar'), nameBar = root.querySelector('.ct-name-bar');
       if (!wrap || !bar) return;
       const table = wrap.querySelector('table');
+      const clipped = Math.max(0, ...[...table.querySelectorAll('.ct-name-in')].map(box => box.scrollWidth - box.clientWidth));
+      nameBar.style.display = clipped ? '' : 'none';
+      if (clipped) {
+        const width = table.querySelector('thead th.ct-name').offsetWidth;
+        nameBar.style.width = width + 'px';
+        nameBar.firstChild.style.width = (width + clipped) + 'px';
+        nameBar.scrollLeft = state.nx;
+      }
+      setNameScroll(clipped ? nameBar.scrollLeft : 0);
       bar.style.display = table.offsetWidth > wrap.clientWidth ? '' : 'none';
-      // The bar spans the table's vertical scrollbar too, so its scrolling range is the table's.
-      bar.firstChild.style.width = (table.offsetWidth + wrap.offsetWidth - wrap.clientWidth) + 'px';
+      // The bar's scrolling range is the table's: its own width, plus what the table overflows its frame by.
+      bar.firstChild.style.width = (bar.clientWidth + table.offsetWidth - wrap.clientWidth) + 'px';
       setScroll(state.x);
       bar.scrollLeft = state.x;
     }
@@ -870,13 +901,13 @@
       html += '</tr></thead><tbody>';
       for (const r of R) {
         const selectedRow = +openCi === r.ci;
-        html += `<tr${selectedRow && openType === 'n' ? ' class="ct-row-selected"' : ''}><td class="ct-name">${nameHtml(r)}</td>`;
+        html += `<tr${selectedRow && openType === 'n' ? ' class="ct-row-selected"' : ''}><td class="ct-name"><div class="ct-name-in">${nameHtml(r)}</div></td>`;
         html += V.map(c => `<td${selectedRow && openType === 'c' && openId === c.id ? ' class="ct-cell-selected"' : ''}>${cellHtml(r, c)}</td>`).join('');
         html += '</tr>';
       }
-      if (!R.length) html += `<tr><td class="ct-name ct-muted">All candidates are hidden by the legend.</td>${V.map(() => '<td></td>').join('')}</tr>`;
+      if (!R.length) html += `<tr><td class="ct-name ct-muted"><div class="ct-name-in">All candidates are hidden by the legend.</div></td>${V.map(() => '<td></td>').join('')}</tr>`;
       html += '</tbody></table></div>';
-      html += '<div class="ct-scrollbar"><div></div></div>';
+      html += '<div class="ct-bars"><div class="ct-name-bar"><div></div></div><div class="ct-scrollbar"><div></div></div></div>';
 
       html += sel ? detailsHtml(sel) : `<div class="ct-hint">${HINT}</div>`;
 
@@ -911,11 +942,15 @@
       // The shifts are made by --ct-scroll: the browser must not scroll the clipped table by itself (eg. to a focus).
       wrap.onscroll = () => { if (wrap.scrollLeft) wrap.scrollLeft = 0; };
       bar.onscroll = () => setScroll(bar.scrollLeft);
+      const nameBar = root.querySelector('.ct-name-bar');
+      nameBar.onscroll = () => setNameScroll(nameBar.scrollLeft);
       wrap.onwheel = e => {
         const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
-        if (!d || bar.style.display === 'none') return;
+        // Over the candidate column, the wheel scrolls it, when it is clipped.
+        const target = e.target.closest && e.target.closest('.ct-name') && nameBar.style.display !== 'none' ? nameBar : bar;
+        if (!d || target.style.display === 'none') return;
         e.preventDefault();
-        bar.scrollLeft += d;
+        target.scrollLeft += d;
       };
       fitColumns();
       syncScrollbar();
