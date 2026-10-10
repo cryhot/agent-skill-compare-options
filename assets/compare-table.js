@@ -787,7 +787,7 @@
         `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> View ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ' <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="Fetch the latest version of the view only for this table, not of the skill itself">↻ Update</span>' + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
         '<div style="margin-top:2px"><span class="ct-muted">🛠️ agent skill</span><span class="ct-muted"> · </span>Surveys and compares options before choosing anything, in any domain.</div>' +
         shieldsHtml() +
-        `<div class="ct-muted" style="margin-top:8px">${link(REPO, 'Repository')} · ${link(`${REPO}/issues`, 'Report an issue')} · ${link(`${REPO}/releases`, 'Releases')}</div>` +
+        `<div class="ct-muted" style="margin-top:8px">${link(REPO, 'Repository')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:bug')}&labels=bug`, 'Report a bug')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:enhancement')}&labels=enhancement`, 'Request a feature')} · ${link(`${REPO}/releases`, 'Releases')}</div>` +
         '</div></div>';
     }
 
