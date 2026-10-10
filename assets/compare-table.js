@@ -21,7 +21,7 @@
   --ct-tint-strong: color-mix(in srgb, var(--text-primary, #1f1f1d) 14%, var(--ct-surface));
   --ct-first-col: 190px;
   --ct-col: 150px;
-  --ct-max-height: 600px;
+  --ct-max-height: 600px;  /* in a widget: 60% of the window's height minus 100px, when it is known (see fitWidget) */
   /* syntax coloring, after Atom One Light */
   --ct-syntax-keyword: #a626a4;
   --ct-syntax-string: #50a14f;
@@ -830,6 +830,14 @@
 
     // ── Height in a page ──────────────────────────────────────────────────
 
+    // In a widget, the table is limited to 60% of the height of the window that shows it, minus 100px. The widget's own frame is
+    // no help, as it grows with its content, but a frame can read the size of the whole window (outerHeight).
+    // Where that is not known, the height stays at --ct-max-height.
+    function fitWidget() {
+      if (!canPrompt) return;
+      if (window.outerHeight > 0) root.style.setProperty('--ct-max-height', Math.max(240, Math.round(window.outerHeight * 0.6 - 100)) + 'px');
+    }
+
     // In a page, the tables are limited to the window's height minus what the rest of the page takes
     // (margins, paddings, other content), so that the page itself does not scroll.
     function fitPage() {
@@ -1002,6 +1010,7 @@
 
       const wrap = root.querySelector('.ct-wrap'), nameBar = root.querySelector('.ct-name-bar');
       fitPage();
+      fitWidget();
       nameBar.onscroll = () => setNameScroll(nameBar.scrollLeft);
       // A cell of the candidate column, swiped or scrolled by the wheel, carries the others with it; a short cell that
       // stops at its end, in answer to that, is not taken for a scroll of its own.
@@ -1330,7 +1339,7 @@
     // Neither the menu of a long press, nor the selection of the text under it.
     root.addEventListener('contextmenu', e => { if (press) e.preventDefault(); });
 
-    window.addEventListener('resize', fitPage);
+    window.addEventListener('resize', () => { fitPage(); fitWidget(); });
     if (window.ResizeObserver) {
       let width;
       new ResizeObserver(() => {
