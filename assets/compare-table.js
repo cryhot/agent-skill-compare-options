@@ -189,6 +189,10 @@
 .ct .ct-shields { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; }
 .ct .ct-shields a { display: flex; }
 .ct .ct-shields img { display: block; height: 20px; }
+.ct .ct-shields a { color: #fff; text-decoration: none; }
+.ct .ct-badge { display: inline-flex; height: 20px; font: 11px/20px Verdana, Geneva, 'DejaVu Sans', sans-serif; white-space: nowrap; }
+.ct .ct-badge > span { display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; }
+.ct .ct-badge svg { width: 13px; height: 13px; fill: #fff; }
 .ct .ct-link { cursor: pointer; }
 .ct .ct-link:hover { text-decoration: underline; }
 
@@ -723,16 +727,55 @@
     }
 
 
-    // Badges from shields.io, as in the README: label, image path and link. One that cannot load (offline, blocked) is dropped.
+    // Badges, as in the README, each described once: logo (a shields.io logo name), label, message, color (a hex or a
+    // CSS color name; the message's), link, and shield, the path of a live badge of shields.io. Without a shield, the badge
+    // is a static one of shields.io: the label, the message and the color (gray when there is no message).
+    // With one, the live badge has its own message and color, and the message defaults to "↗" (null for none) when it is
+    // drawn; the label and the color given before `shield` in the object are forced on the live badge, the ones given
+    // after it are only for the drawn one (shields.io cannot replace a live message). The logoColor and style are set for all.
+    // The sandbox of a widget does not load images from shields.io: a badge that cannot load is drawn from its
+    // description, with the logos that the script has.
     const SHIELDS = [
-      ['repository', `badge/${encodeURIComponent(SLUG.replace(/-/g, '--'))}-%20?labelColor=gray&logo=github&logoColor=white&color=darkgray`, REPO],
-      ['license', `github/license/${SLUG}`, `${REPO}/blob/main/LICENSE`],
-      ['release', `github/v/release/${SLUG}?logo=github&logoColor=white`, `${REPO}/releases/latest`],
-      ['stars', `github/stars/${SLUG}?logo=github&logoColor=white`, `https://www.star-history.com/?repos=${encodeURIComponent(SLUG)}&releases&legend=bottom-right`],
-      ['jsDelivr hits', `jsdelivr/gh/hm/${SLUG}?logo=jsDelivr&logoColor=white`, `https://www.jsdelivr.com/package/gh/${SLUG}`],
+      { logo: 'github',   message: SLUG, color: 'darkgray', link: REPO },
+      { logo: 'github',   label: 'license', shield: `github/license/${SLUG}`,  message: 'MIT', color: '#97ca00', link: `${REPO}/blob/main/LICENSE` },
+      { logo: 'github',   label: 'release',  shield: `github/v/release/${SLUG}`, message: 'latest ↗', color: '#007ec6', link: `${REPO}/releases/latest` },
+      { logo: 'github',   label: 'stars',    shield: `github/stars/${SLUG}`, color: '#007ec6', link: `https://www.star-history.com/?repos=${encodeURIComponent(SLUG)}&releases&legend=bottom-right` },
+      { logo: 'jsDelivr', label: 'jsdelivr', shield: `jsdelivr/gh/hm/${SLUG}`, color: '#97ca00', link: `https://www.jsdelivr.com/package/gh/${SLUG}` },
     ];
-    const shieldsHtml = () => '<div class="ct-shields">' + SHIELDS.map(([name, path, url]) =>
-      link(url, `<img class="ct-shield" alt="${name}" src="https://img.shields.io/${path}${path.includes('?') ? '&' : '?'}style=flat-square">`)).join('') + '</div>';
+    const LOGOS = { github: GITHUB_MARK };
+    const shieldMessage = b => 'message' in b ? b.message : b.shield ? '↗' : undefined;
+    const shieldUrl = b => {
+      const keys = Object.keys(b), forced = key => key in b && keys.indexOf(key) < keys.indexOf('shield');
+      const esc = text => encodeURIComponent(String(text).replace(/[_-]/g, '$&$&').replace(/ /g, '_'));
+      const bare = color => String(color).replace(/^#/, '');
+      const query = [];
+      let path;
+      if (b.shield) {
+        path = b.shield;
+        if (b.logo) query.push(`logo=${b.logo}`);
+        if (forced('label')) query.push(`label=${encodeURIComponent(b.label)}`);
+        if (forced('color')) query.push(`color=${bare(b.color)}`);
+      } else {
+        path = `badge/${[b.label, b.message].filter(Boolean).map(esc).join('-') || '%20'}-%20`;
+        if (!b.label && b.message && b.logo) query.push('labelColor=gray');
+        if (b.logo) query.push(`logo=${b.logo}`);
+        query.push(`color=${b.message ? bare(b.color || 'lightgrey') : 'gray'}`);
+      }
+      if (b.logo) query.push('logoColor=white');
+      query.push('style=flat-square');
+      return `https://img.shields.io/${path}?${query.join('&')}`;
+    };
+    // The same badge, drawn: the logo and the label on the label color, the message on the badge's.
+    const drawnBadge = b => {
+      const message = shieldMessage(b);
+      const parts = [
+        ...(b.label || LOGOS[b.logo] ? [{ logo: LOGOS[b.logo], text: b.label, color: '#555' }] : []),
+        ...(message ? [{ text: message, color: b.color || '#9f9f9f' }] : []),
+      ];
+      return '<span class="ct-badge">' + parts.map(p => `<span style="background:${p.color}">${p.logo || ''}${p.text ? escapeHtml(p.text) : ''}</span>`).join('') + '</span>';
+    };
+    const shieldsHtml = () => '<div class="ct-shields">' + SHIELDS.map((b, i) =>
+      ((img) => b.link ? link(b.link, img) : img)(`<img class="ct-shield" data-i="${i}" alt="${escapeHtml([b.label, shieldMessage(b)].filter(Boolean).join(' '))}" src="${shieldUrl(b)}">`)).join('') + '</div>';
 
     // The box about the skill: the same box as the details, opened by the GitHub button of the hint,
     // which stays its close button (red on hover) instead of becoming a cross.
@@ -1105,8 +1148,10 @@
       render();
     });
 
+    // A badge that cannot load is drawn instead (the error of an image does not bubble: it is caught on the way down).
     root.addEventListener('error', e => {
-      if (e.target.classList && e.target.classList.contains('ct-shield')) e.target.closest('a').remove();
+      const img = e.target;
+      if (img.classList && img.classList.contains('ct-shield')) img.outerHTML = drawnBadge(SHIELDS[+img.dataset.i]);
     }, true);
 
     // Middle click hides what it lands on, and never shows anything back.
