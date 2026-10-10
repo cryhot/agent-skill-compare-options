@@ -206,6 +206,9 @@
 .ct .ct-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 0 8px 6px; }
 .ct button { font-size: 12px; cursor: pointer; }
 .ct button.ct-halo-button { box-shadow: 0 0 6px 1px var(--ct-halo); }
+/* A button that toggles something stays greyish while it is on. */
+.ct button[aria-pressed="true"] { background: var(--ct-tint-strong); }
+.ct button[aria-pressed="true"]:hover { background: color-mix(in srgb, currentColor 10%, var(--ct-tint-strong)); }
 .ct .ct-markdown-export { margin: 4px 8px 6px; padding: 8px; border: 0.5px solid var(--ct-border); border-radius: var(--radius, 8px); font-size: 11px; white-space: pre-wrap; }
 `;
 
@@ -904,7 +907,7 @@
       html += '<div class="ct-actions">';
       html += canPrompt
         ? '<button data-action="markdown" title="Send this view (filters, order, hidden criteria) to the chat as a markdown table">Export as markdown ↗</button>'
-        : '<button data-action="markdown" title="Show this view as a markdown table">Show as markdown</button>';
+        : `<button data-action="markdown" aria-pressed="${state.showMarkdown}" title="${state.showMarkdown ? 'Hide the markdown table' : 'Show this view as a markdown table'}">Show as markdown</button>`;
       if (canPrompt) {
         html += '<button data-action="artifact" title="Ask Claude to publish the whole report as a shareable artifact page, keeping this table\'s view">Export as artifact ↗</button>';
       }
