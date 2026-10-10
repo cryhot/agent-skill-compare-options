@@ -49,13 +49,23 @@ A change of the interface edits its documentation and its parser together, so it
 Add `prompt` after it only when the prompt changes for another reason than how to use the interface, as in `feat(view-interface,prompt): …`.
 When another change cannot be split, list its scopes separated by commas too.
 
-A change that breaks the data format of tables already written adds a `BREAKING CHANGE:` line at the end of the commit body.
+A `view-interface` change that breaks the data format of tables already written
+adds a `BREAKING CHANGE:` line at the end of the commit body.
 It calls for a new major version, as widgets load the table script from the latest release of their major version.
+
+A `view-interface` change that changes the data format but is backward-compatible with tables already written
+adds a `COMPATIBLE CHANGE:` line at the end of the commit body.
+It calls for a new minor version.
+
+Any other change calls for a new patch version, whatever its tag: a `feat(view)` that leaves the data format alone is a patch.
 
 
 ## Releases
 
-Pushing a tag `vX.Y.Z` runs [`release.yml`](.github/workflows/release.yml), which attaches the skill's zip to the release.
+Pick the version of the tag `vX.Y.Z` from the [commit messages](#commit-messages) since the previous tag:
+the highest bump called for wins (`X` for a `BREAKING CHANGE:`, then `Y` for a `COMPATIBLE CHANGE:`, then `Z`).
+
+Pushing that tag runs [`release.yml`](.github/workflows/release.yml), which attaches the skill's zip to the release.
 The zip leaves out what only matters to the repository: [`.gitattributes`](.gitattributes) lists it with the `skill-ignore` attribute, so mark a new file that is not part of the skill there.
 It also gets a tiny `README.md` of its own, which links back to the repository at the release's version.
 GitHub's own _Source code_ archives keep everything.
