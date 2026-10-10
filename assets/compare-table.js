@@ -165,9 +165,11 @@
     linear-gradient(90deg, var(--ct-highlight), transparent) left / 5px 100% no-repeat;
 }
 
-/* Details box, below the table. Its close button is centered on the box's rounded corner. */
+/* Details box, below the table. Its close button is centered on the box's rounded corner.
+   Everything stacked under the table is 8px apart: the hint or the box, the actions, the markdown (and the buttons),
+   the actions keeping 6px of padding under them, so the markdown has 2px of margin above it. */
 .ct .ct-hint { position: relative; margin: 8px 8px 0; padding-right: 32px; border: 0.5px solid transparent; font-size: 11px; color: var(--ct-text-3); }
-.ct .ct-details { position: relative; margin: 16px 8px 10px; border: 0.5px solid var(--ct-border-strong); border-radius: 16px; font-size: 13px; box-shadow: 0 0 6px 1px var(--ct-halo); }
+.ct .ct-details { position: relative; margin: 8px 8px 0; border: 0.5px solid var(--ct-border-strong); border-radius: 16px; font-size: 13px; box-shadow: 0 0 6px 1px var(--ct-halo); }
 .ct .ct-details-body { padding: 10px 40px 12px 14px; }
 .ct .ct-details hr { border: none; border-top: 0.5px solid var(--ct-border-strong); margin: 6px -26px 6px 0; }
 /* In a page, a long details box scrolls inside, instead of squeezing the table. */
@@ -177,13 +179,10 @@
 /* The box about the skill keeps its height, and its close button the place of the hint's button: it never scrolls. */
 .ct.ct-page > .ct-details.ct-about-box { flex: none; }
 .ct.ct-page .ct-about-box .ct-details-body { max-height: none; overflow: visible; }
-/* A flex container does not collapse the margins of its children: the details' bottom margin and the actions' top margin stay as one gap. */
-.ct.ct-page > .ct-details + .ct-actions { margin-top: 2px; }
 .ct .ct-close { position: absolute; top: 3.5px; right: 3.5px; width: 24px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 0.5px solid var(--ct-border-strong); border-radius: 50%; font-size: 15px; line-height: 1; color: var(--ct-text-2); cursor: pointer; }
 .ct .ct-close:hover { background: #E53935; border-color: #E53935; color: #fff; }
 /* The button that opens the box about the skill sits where the close button of a details box shows, and gives it way
-   when a box is open: the box starts 8px lower than the hint, and has the same border (hence the transparent one). */
-.ct .ct-about { top: 11.5px; }
+   when a box is open: the hint starts where the box does, and has the same border (hence the transparent one). */
 .ct .ct-about:hover { background: var(--ct-tint-strong); border-color: var(--ct-text-3); color: var(--ct-text-2); }
 .ct .ct-close svg { width: 14px; height: 14px; fill: currentColor; }
 .ct .ct-shields { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; }
@@ -218,13 +217,17 @@
 .ct .hljs-built_in, .ct .hljs-type, .ct .hljs-params { color: var(--ct-syntax-builtin); }
 
 /* Action buttons, and the markdown export shown when there is no chat to send it to. */
-.ct .ct-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 0 8px 6px; }
+.ct .ct-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; padding: 0 8px 6px; }
 .ct button { font-size: 12px; cursor: pointer; }
+/* The action buttons are sized by their text, whatever the host's buttons do (some hosts stretch them to the full width,
+   which stacks them one per line), and compact on a narrow screen, so that two fit on a line. */
+.ct .ct-actions button { width: auto; min-width: 0; flex: 0 1 auto; margin: 0; }
+@media (max-width: 480px) { .ct .ct-actions button { height: auto; min-height: 0; padding: 4px 10px; } }
 .ct button.ct-halo-button { box-shadow: 0 0 6px 1px var(--ct-halo); }
 /* A button that toggles something stays greyish while it is on. */
 .ct button[aria-pressed="true"] { background: var(--ct-tint-strong); }
 .ct button[aria-pressed="true"]:hover { background: color-mix(in srgb, currentColor 10%, var(--ct-tint-strong)); }
-.ct .ct-markdown-export { margin: 4px 8px 6px; padding: 8px; border: 0.5px solid var(--ct-border); border-radius: var(--radius, 8px); font-size: 11px; white-space: pre-wrap; }
+.ct .ct-markdown-export { margin: 2px 8px 6px; padding: 8px; border: 0.5px solid var(--ct-border); border-radius: var(--radius, 8px); font-size: 11px; white-space: pre-wrap; }
 `;
 
   const CODE_TO_COLOR = '.ct-code-block code[class*="language-"]:not(.hljs)';
