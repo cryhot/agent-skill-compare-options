@@ -83,5 +83,7 @@ Criterion types, and the values of `v`:
   Drag headers and hidden criteria anywhere in the table or the legend to reorder, show or hide them.
 - **Details**: click an emoji for its details, then use the arrow keys to move between cells; `Esc` closes.
   Moving left or right keeps the variant line that was last chosen in that row.
+- **About**: the GitHub button, at the right of the hint, opens a box about the skill and its repository, in place of the details,
+  with its version and an _Update_ link that loads the latest version of the table script, and shows the table again in the same view.
 - **Actions**: export the view as markdown or as an artifact,
   and, when details are open, ask Claude to explore the candidate or that evaluation.

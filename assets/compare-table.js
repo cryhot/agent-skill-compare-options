@@ -3,6 +3,8 @@
 (() => {
   // The version of this script: the commit that a release tag points at sets it to the tag's (see CONTRIBUTING.md).
   const VERSION = '1.2.0';
+  // Where this script was loaded from, to load it again (empty when it is inlined in the page).
+  const SRC = (document.currentScript && document.currentScript.src) || '';
   const CSS = `
 /* Theme tokens: the host's variables when it has them, with light fallbacks here and dark ones below. */
 .ct {
@@ -164,7 +166,7 @@
 }
 
 /* Details box, below the table. Its close button is centered on the box's rounded corner. */
-.ct .ct-hint { margin: 8px 8px 0; font-size: 11px; color: var(--ct-text-3); }
+.ct .ct-hint { position: relative; margin: 8px 8px 0; padding-right: 32px; border: 0.5px solid transparent; font-size: 11px; color: var(--ct-text-3); }
 .ct .ct-details { position: relative; margin: 16px 8px 10px; border: 0.5px solid var(--ct-border-strong); border-radius: 16px; font-size: 13px; box-shadow: 0 0 6px 1px var(--ct-halo); }
 .ct .ct-details-body { padding: 10px 40px 12px 14px; }
 .ct .ct-details hr { border: none; border-top: 0.5px solid var(--ct-border-strong); margin: 6px -26px 6px 0; }
@@ -172,10 +174,21 @@
 .ct.ct-page > .ct-details { flex: 0 1 auto; min-height: 60px; display: flex; flex-direction: column; }
 .ct.ct-page .ct-details-body { min-height: 0; max-height: 40vh; overflow-y: auto; scrollbar-width: thin; border-radius: inherit; }
 .ct.ct-page .ct-details.ct-scrolls .ct-close { right: 14px; }
+/* The box about the skill keeps its height, and its close button the place of the hint's button: it never scrolls. */
+.ct.ct-page > .ct-details.ct-about-box { flex: none; }
+.ct.ct-page .ct-about-box .ct-details-body { max-height: none; overflow: visible; }
 /* A flex container does not collapse the margins of its children: the details' bottom margin and the actions' top margin stay as one gap. */
 .ct.ct-page > .ct-details + .ct-actions { margin-top: 2px; }
 .ct .ct-close { position: absolute; top: 3.5px; right: 3.5px; width: 24px; height: 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 0.5px solid var(--ct-border-strong); border-radius: 50%; font-size: 15px; line-height: 1; color: var(--ct-text-2); cursor: pointer; }
 .ct .ct-close:hover { background: #E53935; border-color: #E53935; color: #fff; }
+/* The button that opens the box about the skill sits where the close button of a details box shows, and gives it way
+   when a box is open: the box starts 8px lower than the hint, and has the same border (hence the transparent one). */
+.ct .ct-about { top: 11.5px; }
+.ct .ct-about:hover { background: var(--ct-tint-strong); border-color: var(--ct-text-3); color: var(--ct-text-2); }
+.ct .ct-close svg { width: 14px; height: 14px; fill: currentColor; }
+.ct .ct-shields { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; }
+.ct .ct-shields a { display: flex; }
+.ct .ct-shields img { display: block; height: 20px; }
 .ct .ct-link { cursor: pointer; }
 .ct .ct-link:hover { text-decoration: underline; }
 
@@ -267,12 +280,14 @@
         ...criterionIds.filter(id => !asList(initialView.order).includes(id)),
       ],
       open: null,              // key of the selected mark, see "Mark keys"
+      about: root.dataset.ctAbout === '1',  // the box about the skill, in place of the details
       variantMemory: null,     // variant to keep when moving left or right…
       variantMemoryRow: null,  // …in this candidate's row
       drag: null,              // id of the criterion being dragged
       nx: 0,                   // horizontal scroll of the candidate column
       showMarkdown: false,     // markdown export shown under the table
       flash: null,             // error message from the last action
+      update: root.dataset.ctUpdate || '',  // what the last update of the script found, after its link in the box about the skill
     };
 
 
@@ -280,6 +295,12 @@
 
     const escapeHtml = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
     const link = (url, text) => `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
+    // The only place that names the repository: the links, the badges and the skill's name come from it.
+    const SLUG = 'cryhot/agent-skill-compare-options';
+    const REPO = `https://github.com/${SLUG}`;
+    const SKILL = SLUG.split('/')[1].replace(/^agent-skill-/, '');
+    // The GitHub mark, from Octicons (MIT).
+    const GITHUB_MARK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
 
     // Inline syntax, on text already escaped.
     function inlineMarkdown(html) {
@@ -698,6 +719,32 @@
     }
 
 
+    // Badges from shields.io, as in the README: label, image path and link. One that cannot load (offline, blocked) is dropped.
+    const SHIELDS = [
+      ['repository', `badge/${encodeURIComponent(SLUG.replace(/-/g, '--'))}-%20?labelColor=gray&logo=github&logoColor=white&color=darkgray`, REPO],
+      ['license', `github/license/${SLUG}`, `${REPO}/blob/main/LICENSE`],
+      ['release', `github/v/release/${SLUG}?logo=github&logoColor=white`, `${REPO}/releases/latest`],
+      ['stars', `github/stars/${SLUG}?logo=github&logoColor=white`, `https://www.star-history.com/?repos=${encodeURIComponent(SLUG)}&releases&legend=bottom-right`],
+      ['jsDelivr hits', `jsdelivr/gh/hm/${SLUG}?logo=jsDelivr&logoColor=white`, `https://www.jsdelivr.com/package/gh/${SLUG}`],
+    ];
+    const shieldsHtml = () => '<div class="ct-shields">' + SHIELDS.map(([name, path, url]) =>
+      link(url, `<img class="ct-shield" alt="${name}" src="https://img.shields.io/${path}${path.includes('?') ? '&' : '?'}style=flat-square">`)).join('') + '</div>';
+
+    // The box about the skill: the same box as the details, opened by the GitHub button of the hint,
+    // which stays its close button (red on hover) instead of becoming a cross.
+    function aboutHtml() {
+      return '<div class="ct-details ct-about-box">' +
+        `<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="Close" title="Close (Esc)">${GITHUB_MARK}</span>` +
+        '<div class="ct-details-body">' +
+        // Laid out like the details: a path, then a status line.
+        `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> View ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ' <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="Fetch the latest version of the view only for this table, not of the skill itself">↻ Update</span>' + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
+        '<div style="margin-top:2px"><span class="ct-muted">🛠️ agent skill</span><span class="ct-muted"> · </span>Surveys and compares options before choosing anything, in any domain.</div>' +
+        shieldsHtml() +
+        `<div class="ct-muted" style="margin-top:8px">${link(REPO, 'Repository')} · ${link(`${REPO}/issues`, 'Report an issue')} · ${link(`${REPO}/releases`, 'Releases')}</div>` +
+        '</div></div>';
+    }
+
+
     // ── Exports ───────────────────────────────────────────────────────────
 
     function markdownExport() {
@@ -743,6 +790,30 @@
       };
       for (const k of Object.keys(view)) if (!view[k].length) delete view[k];
       return view;
+    }
+
+    // Loads the latest version of this script, and mounts the table again with it, in the same view.
+    // Its address gets a query string, which the CDN ignores and the browser's cache does not, so that the browser
+    // asks for it again: a script tag needs nothing more than the first load did.
+    function refresh() {
+      state.update = 'Fetching the latest version…';
+      render();
+      const script = document.createElement('script');
+      script.src = SRC.split('?')[0] + '?refresh=' + Date.now();
+      script.onload = () => {
+        // From here, window.CompareTable is the new script's, and the new root has none of the old listeners.
+        const next = root.cloneNode(false), data = document.createElement('script');
+        delete next.dataset.ctMounted;
+        next.dataset.ctAbout = state.about ? '1' : '';
+        next.dataset.ctUpdate = window.CompareTable.version === VERSION ? `No newer version found, v${VERSION}` : `Updated to v${window.CompareTable.version}`;
+        data.type = 'application/json';
+        data.textContent = JSON.stringify({ ...DATA, view: viewState() });
+        next.append(data);
+        root.replaceWith(next);
+        window.CompareTable.mountAll();
+      };
+      script.onerror = () => { script.remove(); state.update = 'Could not fetch the latest version'; render(); };
+      document.head.appendChild(script);
     }
 
     function send(prompt) {
@@ -903,7 +974,8 @@
       html += '</tbody></table></div>';
       html += '<div class="ct-name-bar"><div></div></div>';
 
-      html += sel ? detailsHtml(sel) : `<div class="ct-hint">${HINT}</div>`;
+      html += sel ? detailsHtml(sel) : state.about ? aboutHtml()
+        : `<div class="ct-hint">${HINT}<span class="ct-close ct-about" role="button" tabindex="0" data-about="1" aria-label="About this skill" title="About ${SKILL}, on GitHub">${GITHUB_MARK}</span></div>`;
 
       const halo = color => color ? ` style="--ct-halo-color:${color}"` : '';
       html += '<div class="ct-actions">';
@@ -957,7 +1029,8 @@
     root.addEventListener('click', e => {
       if (e.target.closest('a')) return;
       state.flash = null;
-      const el = e.target.closest('[data-flip],[data-hide],[data-sort],[data-show],[data-group],[data-mark],[data-open],[data-goto],[data-action],[data-close]');
+      state.update = '';
+      const el = e.target.closest('[data-flip],[data-hide],[data-sort],[data-show],[data-group],[data-mark],[data-open],[data-goto],[data-action],[data-close],[data-about],[data-refresh]');
       if (!el) return;
       const d = el.dataset;
 
@@ -984,7 +1057,13 @@
       } else if (d.mark) {
         if (state.off.has(d.mark)) state.off.delete(d.mark);
         else state.off.add(d.mark);
+      } else if (d.refresh) {
+        refresh();
+        return;
+      } else if (d.about) {
+        state.about = true;
       } else if (d.open) {
+        state.about = false;
         if (state.open === d.open) state.open = null;
         else {
           const p = locate(d.open);
@@ -997,6 +1076,7 @@
         state.open = d.goto;
       } else if (d.close) {
         state.open = null;
+        state.about = false;
       } else if (d.action === 'markdown') {
         if (canPrompt) send('Print this comparison view as markdown, as is:\n\n' + markdownExport());
         else state.showMarkdown = !state.showMarkdown;
@@ -1011,6 +1091,10 @@
       }
       render();
     });
+
+    root.addEventListener('error', e => {
+      if (e.target.classList && e.target.classList.contains('ct-shield')) e.target.closest('a').remove();
+    }, true);
 
     // Middle click hides what it lands on, and never shows anything back.
     const MIDDLE_CLICK_TARGETS = '[data-flip],[data-group],[data-mark],[data-drag]';
@@ -1034,8 +1118,8 @@
 
     const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
     root.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && (state.open || state.about)) { state.open = null; state.about = false; render(); return; }
       if (!state.open) return;
-      if (e.key === 'Escape') { state.open = null; render(); return; }
       const dir = ARROWS[e.key];
       if (!dir) return;
       e.preventDefault();
@@ -1258,12 +1342,14 @@
   }
 
   function mountAll() {
-    if (!document.getElementById('ct-style')) {
-      const style = document.createElement('style');
+    // The style is the latest script's, so that a table mounted again after a refresh looks as the new script means it to.
+    let style = document.getElementById('ct-style');
+    if (!style) {
+      style = document.createElement('style');
       style.id = 'ct-style';
-      style.textContent = CSS;
       document.head.appendChild(style);
     }
+    style.textContent = CSS;
     for (const root of document.querySelectorAll('.ct')) {
       const json = root.querySelector(':scope > script[type="application/json"]');
       if (!json || root.dataset.ctMounted) continue;
