@@ -105,6 +105,7 @@
 .ct table.ct-fits .ct-name-in { width: auto; min-width: var(--ct-name-w, var(--ct-first-col)); max-width: var(--ct-name-cap, none); }
 .ct table:not(.ct-fits) td:not(.ct-name) > *, .ct table:not(.ct-fits) th:not(.ct-name) > .ct-head { max-width: var(--ct-col); }
 .ct th, .ct td { padding: 6px 8px 6px 6px;border-bottom: 0.5px solid var(--ct-border); vertical-align: top; text-align: left; line-height: 1.35; }
+.ct td { position: relative; }  /* the anchor of what is drawn over the cell (the halo of a selected row); without it, the whole widget */
 .ct .ct-name, .ct thead th { background: var(--ct-tint); }
 .ct .ct-name { position: sticky; left: 0; z-index: 2; }
 .ct .ct-name-bar { display: none; overflow-x: auto; overflow-y: hidden; }
