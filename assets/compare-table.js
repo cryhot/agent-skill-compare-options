@@ -128,7 +128,10 @@
 .ct .ct-dragged { background: color-mix(in srgb, var(--ct-accent) 25%, var(--ct-tint)) !important; }
 .ct .ct-drop-line { display: none; position: absolute; z-index: 10; width: 2px; margin-left: -1px; background: var(--ct-accent); pointer-events: none; }
 .ct .ct-ghost { position: absolute; top: -1000px; left: 0; padding-left: 5px; font-size: 12px; }
-.ct .ct-ghost .ct-chip { background: var(--ct-tint-strong); border-color: var(--ct-border-strong); }
+.ct .ct-ghost .ct-chip, .ct .ct-touch-ghost .ct-chip { background: var(--ct-tint-strong); border-color: var(--ct-border-strong); }
+/* The label that follows a finger dragging a criterion, and no text selection on what a long press drags. */
+.ct .ct-touch-ghost { position: fixed; z-index: 1000; transform: translateX(-50%); width: max-content; white-space: nowrap; padding: 0 5px; font-size: 12px; pointer-events: none; }
+.ct [data-drag] { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
 /* Cells: one line per mark, the mark being an emoji with a larger invisible hit area. */
 .ct .ct-line { display: flex; gap: 6px; align-items: flex-start; }
@@ -928,6 +931,8 @@
         if (!box.classList || !box.classList.contains('ct-name-in')) return;
         if (Math.abs(Math.min(state.nx, box.scrollWidth - box.clientWidth) - box.scrollLeft) >= 1) setNameScroll(box.scrollLeft);
       }, true);
+      // Once our own drag has started, the finger must not scroll the page: this listener must exist before the touch.
+      for (const el of root.querySelectorAll('[data-drag]')) el.addEventListener('touchmove', e => { if (press && press.active) e.preventDefault(); }, { passive: false });
       fitColumns();
       syncNameBar();
       wrap.scrollTop = scrollTop;
@@ -1106,24 +1111,11 @@
       }
     }
 
-    root.addEventListener('dragstart', e => {
-      const source = e.target.closest && e.target.closest('[data-drag]');
-      if (!source) return;
-      state.drag = source.dataset.drag;
-      source.classList.add('ct-dragged');
-      // the drag image: the criterion as a plain legend chip, just right of the cursor
-      const ghost = document.createElement('span');
-      ghost.className = 'ct-ghost';
-      ghost.innerHTML = `<span class="ct-chip ${constraintClass(criterion(state.drag))}">${escapeHtml(criterion(state.drag).label)}</span>`;
-      root.appendChild(ghost);
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', state.drag);
-      try { e.dataTransfer.setDragImage(ghost, 0, 10); } catch (err) {}
-      setTimeout(() => ghost.remove(), 0);
-    });
+    // A drag, from the browser's drag and drop (a mouse, or a long press where the browser supports it)
+    // or from a long press of our own (see below), goes through the same steps.
+    let autoScroll = 0, dragPoint = null;
     // While a criterion is dragged, the table scrolls sideways when the cursor is near its right edge,
     // or over the candidate column (the way to what is hidden to the left), faster the further in it is.
-    let autoScroll = 0, dragPoint = null;
     function autoScrollStep() {
       autoScroll = 0;
       const wrap = root.querySelector('.ct-wrap');
@@ -1142,36 +1134,110 @@
       showDropLine(dropTarget(dragPoint));
       autoScroll = requestAnimationFrame(autoScrollStep);
     }
-    const stopAutoScroll = () => { cancelAnimationFrame(autoScroll); autoScroll = 0; dragPoint = null; };
-    root.addEventListener('dragover', e => {
-      if (!state.drag) return;
-      const t = dropTarget(e);
+    function dragStart(id, source) {
+      state.drag = id;
+      source.classList.add('ct-dragged');
+    }
+    // `point` is an event, or anything with the element under the cursor (target) and its position.
+    function dragMove(point) {
+      const t = dropTarget(point);
       showDropLine(t);
-      if (t) e.preventDefault();
-      dragPoint = e;
+      dragPoint = point;
       if (!autoScroll) autoScroll = requestAnimationFrame(autoScrollStep);
+      return t;
+    }
+    function dragEnd() {
+      state.drag = null;
+      cancelAnimationFrame(autoScroll);
+      autoScroll = 0;
+      dragPoint = null;
+      showDropLine(null);
+      root.querySelectorAll('.ct-dragged').forEach(el => el.classList.remove('ct-dragged'));
+    }
+    function dragDrop(point) {
+      const id = state.drag, t = dropTarget(point);
+      dragEnd();
+      if (!t) return false;
+      applyDrop(id, t);
+      closeIfHidden();
+      render();
+      return true;
+    }
+
+    root.addEventListener('dragstart', e => {
+      if (press && press.active) { e.preventDefault(); return; }
+      const source = e.target.closest && e.target.closest('[data-drag]');
+      if (!source) return;
+      dragStart(source.dataset.drag, source);
+      // the drag image: the criterion as a plain legend chip, just right of the cursor
+      const ghost = document.createElement('span');
+      ghost.className = 'ct-ghost';
+      ghost.innerHTML = `<span class="ct-chip ${constraintClass(criterion(state.drag))}">${escapeHtml(criterion(state.drag).label)}</span>`;
+      root.appendChild(ghost);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', state.drag);
+      try { e.dataTransfer.setDragImage(ghost, 0, 10); } catch (err) {}
+      setTimeout(() => ghost.remove(), 0);
+    });
+    root.addEventListener('dragover', e => {
+      if (state.drag && dragMove(e)) e.preventDefault();
     });
     root.addEventListener('dragleave', e => {
       if (!root.contains(e.relatedTarget)) showDropLine(null);
     });
     root.addEventListener('drop', e => {
-      if (!state.drag) return;
-      const t = dropTarget(e);
-      showDropLine(null);
-      stopAutoScroll();
-      if (!t) return;
-      e.preventDefault();
-      applyDrop(state.drag, t);
-      state.drag = null;
-      closeIfHidden();
-      render();
+      if (state.drag && dragDrop(e)) e.preventDefault();
     });
-    root.addEventListener('dragend', () => {
-      state.drag = null;
-      stopAutoScroll();
-      showDropLine(null);
-      root.querySelectorAll('.ct-dragged').forEach(el => el.classList.remove('ct-dragged'));
+    root.addEventListener('dragend', dragEnd);
+
+    // Not every browser drags an element by a long press on a touch screen (Firefox and the Claude app select text
+    // instead), so a long press on a header or a chip starts a drag of our own, with a label that follows the finger.
+    let press = null;
+    const pointAt = e => ({ target: document.elementFromPoint(e.clientX, e.clientY) || root, clientX: e.clientX, clientY: e.clientY });
+    const moveTouchGhost = (ghost, e) => { ghost.style.left = e.clientX + 'px'; ghost.style.top = (e.clientY - 44) + 'px'; };
+    function endPress(drop, e) {
+      const ended = press;
+      if (!ended) return;
+      clearTimeout(ended.timer);
+      press = null;
+      if (!ended.active) return;
+      ended.ghost.remove();
+      if (drop) dragDrop(pointAt(e)); else dragEnd();
+      // The click that may follow the release must not sort, hide or open what is under the finger.
+      const stop = ev => ev.stopPropagation();
+      root.addEventListener('click', stop, { capture: true, once: true });
+      setTimeout(() => root.removeEventListener('click', stop, { capture: true }), 300);
+    }
+    root.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'touch' || press || state.drag) return;
+      const source = e.target.closest && e.target.closest('[data-drag]');
+      if (!source) return;
+      press = { id: e.pointerId, x: e.clientX, y: e.clientY, active: false };
+      press.timer = setTimeout(() => {
+        // Later than the long press of the browsers that drag by themselves, which then have the drag already.
+        if (state.drag) { press = null; return; }
+        press.active = true;
+        dragStart(source.dataset.drag, source);
+        const ghost = press.ghost = document.createElement('span');
+        ghost.className = 'ct-touch-ghost';
+        ghost.innerHTML = `<span class="ct-chip ${constraintClass(criterion(state.drag))}">${escapeHtml(criterion(state.drag).label)}</span>`;
+        root.appendChild(ghost);
+        moveTouchGhost(ghost, press);
+        if (navigator.vibrate) navigator.vibrate(15);
+        dragMove(pointAt({ clientX: press.x, clientY: press.y }));
+      }, 600);
     });
+    root.addEventListener('pointermove', e => {
+      if (!press || e.pointerId !== press.id) return;
+      if (press.active) {
+        moveTouchGhost(press.ghost, e);
+        dragMove(pointAt(e));
+      } else if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) endPress(false);  // a swipe: the browser scrolls
+    });
+    root.addEventListener('pointerup', e => { if (press && e.pointerId === press.id) endPress(true, e); });
+    root.addEventListener('pointercancel', e => { if (press && e.pointerId === press.id) endPress(false, e); });
+    // Neither the menu of a long press, nor the selection of the text under it.
+    root.addEventListener('contextmenu', e => { if (press) e.preventDefault(); });
 
     window.addEventListener('resize', fitPage);
     if (window.ResizeObserver) {
