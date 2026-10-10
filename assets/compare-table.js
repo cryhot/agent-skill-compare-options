@@ -1065,7 +1065,7 @@
       if (target.closest('.ct-wrap')) {
         const view = root.querySelector('.ct-wrap').getBoundingClientRect();
         const nameColumn = root.querySelector('thead th.ct-name').getBoundingClientRect();
-        const headers = [...root.querySelectorAll('thead th[data-drag]')].filter(th => th.dataset.drag !== state.drag);
+        const headers = [...root.querySelectorAll('thead th[data-drag]')];
         let ref = null, x = null;
         for (const th of headers) {
           const r = th.getBoundingClientRect();
@@ -1104,8 +1104,15 @@
     }
 
     function applyDrop(id, t) {
-      const order = state.order;
+      const order = state.order, hidden = state.hidden.has(id);
       const move = (ref, after) => {
+        if (ref === id) return;
+        if (state.hidden.has(ref) === hidden) {
+          // Dropped where it is: among the criteria shown (or hidden) like it, the one before the slot is the one before it now.
+          // Moving it anyway could carry it across the criteria of the other kind that lie between.
+          const peers = order.filter(c => state.hidden.has(c) === hidden), others = peers.filter(c => c !== id);
+          if (others[others.indexOf(ref) - (after ? 0 : 1)] === peers[peers.indexOf(id) - 1]) return;
+        }
         order.splice(order.indexOf(id), 1);
         order.splice(order.indexOf(ref) + (after ? 1 : 0), 0, id);
       };
