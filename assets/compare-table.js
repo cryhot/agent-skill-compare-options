@@ -171,8 +171,14 @@
    the actions keeping 6px of padding under them, so the markdown has 2px of margin above it. */
 .ct .ct-hint { position: relative; margin: 8px 8px 0; padding-right: 32px; border: 0.5px solid transparent; font-size: 11px; color: var(--ct-text-3); }
 .ct .ct-details { position: relative; margin: 8px 8px 0; border: 0.5px solid var(--ct-border-strong); border-radius: 16px; font-size: 13px; box-shadow: 0 0 6px 1px var(--ct-halo); }
-.ct .ct-details-body { padding: 10px 40px 12px 14px; }
-.ct .ct-details hr { border: none; border-top: 0.5px solid var(--ct-border-strong); margin: 6px -26px 6px 0; }
+.ct .ct-details-body { min-width: 0; padding: 10px 14px 12px; }
+/* The close button only takes the top right corner: an invisible float there makes the first lines, however many they are,
+   wrap around it, and the rest of the content uses the whole width. */
+.ct .ct-details-body::before { content: ''; float: right; width: 24px; height: 24px; }
+/* What does not fit in the box goes under instead of spilling out: a word that cannot break (a long name, a link) breaks at the
+   edge, and the badges wrap, then shrink when one alone is wider than the box. */
+.ct .ct-details-body { overflow-wrap: anywhere; }
+.ct .ct-details hr { border: none; border-top: 0.5px solid var(--ct-border-strong); margin: 6px 0; }
 /* In a page, a long details box scrolls inside, instead of squeezing the table. */
 .ct.ct-page > .ct-details { flex: 0 1 auto; min-height: 60px; display: flex; flex-direction: column; }
 .ct.ct-page .ct-details-body { min-height: 0; max-height: 40vh; overflow-y: auto; scrollbar-width: thin; border-radius: inherit; }
@@ -187,11 +193,12 @@
 .ct .ct-about:hover { background: var(--ct-tint-strong); border-color: var(--ct-text-3); color: var(--ct-text-2); }
 .ct .ct-close svg { width: 14px; height: 14px; fill: currentColor; }
 .ct .ct-shields { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; }
-.ct .ct-shields a { display: flex; }
-.ct .ct-shields img { display: block; height: 20px; }
+.ct .ct-shields a { display: flex; max-width: 100%; min-width: 0; }
+.ct .ct-shields img { display: block; height: 20px; max-width: 100%; object-fit: contain; object-position: left center; }
 .ct .ct-shields a { color: #fff; text-decoration: none; }
-.ct .ct-badge { display: inline-flex; height: 20px; font: 11px/20px Verdana, Geneva, 'DejaVu Sans', sans-serif; white-space: nowrap; }
-.ct .ct-badge > span { display: inline-flex; align-items: center; gap: 4px; padding: 0 6px; }
+.ct .ct-badge { display: inline-flex; max-width: 100%; height: 20px; overflow: hidden; white-space: nowrap; font: 11px/20px Verdana, Geneva, 'DejaVu Sans', sans-serif; }
+.ct .ct-badge > span { display: inline-flex; align-items: center; gap: 4px; flex: none; padding: 0 6px; }
+/* A drawn badge is like the image it stands for: rigid, never wrapped or cut with dots; if the box is narrower, it is cropped. */
 .ct .ct-badge svg { width: 13px; height: 13px; fill: #fff; }
 .ct .ct-link { cursor: pointer; }
 .ct .ct-link:hover { text-decoration: underline; }
