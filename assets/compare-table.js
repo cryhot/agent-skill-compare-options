@@ -2,7 +2,7 @@
 // `<script type="application/json">`. See compare-table.md for the data format.
 (() => {
   // The version of this script: the commit that a release tag points at sets it to the tag's (see CONTRIBUTING.md).
-  const VERSION = '1.2.0';
+  const VERSION = '1.2.1';
   // Where this script was loaded from, to load it again (empty when it is inlined in the page).
   const SRC = (document.currentScript && document.currentScript.src) || '';
   const CSS = `
