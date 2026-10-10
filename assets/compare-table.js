@@ -1,6 +1,8 @@
 // Renders every comparison table on the page: each `.ct` element holding its data as
 // `<script type="application/json">`. See compare-table.md for the data format.
 (() => {
+  // The version of this script: the commit that a release tag points at sets it to the tag's (see CONTRIBUTING.md).
+  const VERSION = '1.2.0';
   const CSS = `
 /* Theme tokens: the host's variables when it has them, with light fallbacks here and dark ones below. */
 .ct {
@@ -1277,5 +1279,5 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountAll);
   else mountAll();
-  window.CompareTable = { mountAll };
+  window.CompareTable = { mountAll, version: VERSION };
 })();

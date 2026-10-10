@@ -39,6 +39,7 @@ The _scope_ is what the change affects:
 | `prompt`         | what the agent reads or pastes | [`SKILL.md`](SKILL.md), [`assets/compare-table.md`](assets/compare-table.md), [`assets/compare-table.html`](assets/compare-table.html) ... |
 | `view`           | the interactive widgets, their look and behavior | [`assets/compare-table.js`](assets/compare-table.js) ... |
 | `repo`           | what users do not see | [`README.md`](README.md), [`demo/`](demo/), [`.github/`](.github/), the license ... |
+| `release`        | the version a release carries, and nothing else | `VERSION` in [`assets/compare-table.js`](assets/compare-table.js) |
 
 Leave out the scope when none fits, as in `chore: Update the license year`.
 
@@ -64,6 +65,11 @@ Any other change calls for a new patch version, whatever its tag: a `feat(view)`
 
 Pick the version of the tag `vX.Y.Z` from the [commit messages](#commit-messages) since the previous tag:
 the highest bump called for wins (`X` for a `BREAKING CHANGE:`, then `Y` for a `COMPATIBLE CHANGE:`, then `Z`).
+
+Set `VERSION` in [`assets/compare-table.js`](assets/compare-table.js) to that version, without the `v`,
+commit it as `chore(release): Bump the version to X.Y.Z`, and tag that commit.
+Widgets load the script from the tag, so this is how the script knows which release it is.
+The workflow below fails when `VERSION` and the tag differ.
 
 Pushing that tag runs [`release.yml`](.github/workflows/release.yml), which attaches the skill's zip to the release.
 The zip leaves out what only matters to the repository: [`.gitattributes`](.gitattributes) lists it with the `skill-ignore` attribute, so mark a new file that is not part of the skill there.

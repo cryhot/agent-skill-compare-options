@@ -21,6 +21,14 @@ jobs:
           [[ $name =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "::error::No valid skill name in the frontmatter of SKILL.md: '$name'"; exit 1; }
           echo "SKILL_NAME=$name" >> "$GITHUB_ENV"
 
+      # The version the table script says it is (which widgets load from the tag) must be the tag's.
+      - name: 🔖 Check the script's version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(sed -n "s/^  const VERSION = '\(.*\)';.*/\1/p" assets/compare-table.js)
+          [[ v$version == "$TAG" ]] || { echo "::error::assets/compare-table.js says version '$version', and the tag is $TAG: set VERSION in the tagged commit"; exit 1; }
+
       # claude.ai wants the skill's folder, named after the skill, at the top of the zip.
       - name: 📦 Pack the skill
         env:
