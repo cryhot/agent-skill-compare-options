@@ -118,7 +118,9 @@
 .ct .ct-sort-arrow { font-weight: 400; cursor: pointer; }
 .ct .ct-sort-arrow:hover { color: var(--ct-accent); }
 .ct th .ct-hide { display: none; position: absolute; top: 2px; right: 4px; font-size: 16px; font-weight: 400; line-height: 1; color: var(--ct-text-3); cursor: pointer; }
-.ct th:hover .ct-hide { display: block; }
+/* The cross only takes clicks a moment after it appears, so that a tap meant for the header (eg. on a touchscreen) cannot hide it. */
+.ct th:hover .ct-hide { display: block; animation: ct-arm .01s .2s both; }
+@keyframes ct-arm { from { pointer-events: none; } to { pointer-events: auto; } }
 .ct th .ct-hide:hover { color: #E53935; }
 .ct .ct-constraint { display: block; font-size: 11px; font-weight: 400; color: var(--ct-text-3); }
 .ct .ct-hard { color: color-mix(in srgb, #9C27B0 65%, var(--ct-text-3)); }
