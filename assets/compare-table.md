@@ -1,8 +1,11 @@
 # Interactive comparison table
 
 [`compare-table.html`](compare-table.html) renders the comparison as a sortable, filterable table.
-Replace `__DATA__` in it with the JSON described below, written on one line with every `</` escaped as `<\/`,
-and keep the rest of the file as is.
+Replace `__DATA__` in it with the JSON described below, written on one line,
+with every `</` _inside the JSON_ escaped as `<\/`, and nothing else touched:
+keep the rest of the file as is, its `</script>` tags included.
+The line "Loading the table…" stays until the script has mounted the table:
+if it stays, the script did not run (blocked, offline, failed to load, or swallowed as above).
 
 The table itself is [`compare-table.js`](compare-table.js), which the wrapper loads from jsDelivr:
 it renders every `.ct` element of the page that holds its data as `<script type="application/json">`.
