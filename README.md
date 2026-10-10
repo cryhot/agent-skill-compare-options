@@ -34,7 +34,7 @@ Open [the widget itself](https://cryhot.github.io/agent-skill-compare-options/de
 
 
 > [!TIP]
-> More demos [here](https://cryhot.github.io/agent-skill-compare-options/demo/)!
+> More up-to-date demos [here](https://cryhot.github.io/agent-skill-compare-options/demo/)!
 
 
 
