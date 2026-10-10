@@ -1121,11 +1121,35 @@
       try { e.dataTransfer.setDragImage(ghost, 0, 10); } catch (err) {}
       setTimeout(() => ghost.remove(), 0);
     });
+    // While a criterion is dragged, the table scrolls sideways when the cursor is near its right edge,
+    // or over the candidate column (the way to what is hidden to the left), faster the further in it is.
+    let autoScroll = 0, dragPoint = null;
+    function autoScrollStep() {
+      autoScroll = 0;
+      const wrap = root.querySelector('.ct-wrap');
+      if (!state.drag || !dragPoint || !wrap) return;
+      const view = wrap.getBoundingClientRect(), right = view.left + wrap.clientLeft + wrap.clientWidth;
+      const nameRight = wrap.querySelector('thead th.ct-name').getBoundingClientRect().right, edge = Math.min(56, view.width / 5);
+      let speed = 0;
+      if (dragPoint.clientY >= view.top && dragPoint.clientY <= view.bottom) {
+        if (dragPoint.clientX > right - edge) speed = Math.min(1, (dragPoint.clientX - (right - edge)) / edge);
+        else if (dragPoint.clientX < nameRight) speed = -Math.max(0.3, Math.min(1, (nameRight - dragPoint.clientX) / edge));
+      }
+      if (!speed) return;
+      const was = wrap.scrollLeft;
+      wrap.scrollLeft += speed * 14;
+      if (wrap.scrollLeft === was) return;
+      showDropLine(dropTarget(dragPoint));
+      autoScroll = requestAnimationFrame(autoScrollStep);
+    }
+    const stopAutoScroll = () => { cancelAnimationFrame(autoScroll); autoScroll = 0; dragPoint = null; };
     root.addEventListener('dragover', e => {
       if (!state.drag) return;
       const t = dropTarget(e);
       showDropLine(t);
       if (t) e.preventDefault();
+      dragPoint = e;
+      if (!autoScroll) autoScroll = requestAnimationFrame(autoScrollStep);
     });
     root.addEventListener('dragleave', e => {
       if (!root.contains(e.relatedTarget)) showDropLine(null);
@@ -1134,6 +1158,7 @@
       if (!state.drag) return;
       const t = dropTarget(e);
       showDropLine(null);
+      stopAutoScroll();
       if (!t) return;
       e.preventDefault();
       applyDrop(state.drag, t);
@@ -1143,6 +1168,7 @@
     });
     root.addEventListener('dragend', () => {
       state.drag = null;
+      stopAutoScroll();
       showDropLine(null);
       root.querySelectorAll('.ct-dragged').forEach(el => el.classList.remove('ct-dragged'));
     });
