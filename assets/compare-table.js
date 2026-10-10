@@ -577,11 +577,12 @@
       if (V.some(c => c.type === 'check' && !c.hard)) ['good', 'bad'].forEach(k => shown.add(k));
       if (V.some(c => c.type === 'check' && c.hard)) ['perfect', 'incompatible'].forEach(k => shown.add(k));
       if (V.some(c => c.hard)) shown.add('incompatible');
+      // All the candidates count, even those hidden by the legend: a mark switched off must stay there to be switched on.
       DATA.candidates.forEach(cd => variantsOf(cd).forEach(u => {
         if (variantSummary(u) == null) shown.add('unknown');
-        V.forEach(c => {
+        V.filter(isRated).forEach(c => {
           const k = markOf(c, u.cell(c.id)).scale;
-          if (k === 'unknown' || k === 'irrelevant') shown.add(k);
+          if (k === 'unknown' || k === 'irrelevant' || k === 'incompatible') shown.add(k);  // a cell having them (a missing cell is unknown)
         });
       }));
       const categories = V.filter(c => c.type === 'cat').map(c => ({
