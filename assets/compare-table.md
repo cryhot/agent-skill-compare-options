@@ -28,6 +28,7 @@ replace the `<script src="…">` line with `<script>`, the content of `compare-t
 
 ```json
 {
+  "version": "x.y.z",
   "title": "Name of this table in the report",
   "criteria": [
     {"id": "fit", "label": "Fit", "type": "grade", "info": "what it measures", "soft": true},
@@ -59,6 +60,7 @@ Criterion types, and the values of `v`:
 | `bool` (no preferred answer) | `true` `false` `null` | ✅ ❌ ❔, not rated |
 | `cat` | a key of `options`, or `null` | the option's emoji, not rated |
 
+- `version` comes first, and `x.y.z` stands for the `metadata.version` of this skill, in the frontmatter of [`SKILL.md`](../SKILL.md): write that value, not the placeholder.
 - A `grade` criterion can also be `"hard": true`: use `incompatible` for the candidates that break it.
   `"soft": true` marks a soft constraint given by the user.
 - `info` of a criterion shows in its header tooltip and in the details title.

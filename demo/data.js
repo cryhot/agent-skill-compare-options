@@ -2,6 +2,7 @@
 // The first one is the table of the README's screenshot.
 window.COMPARE_TABLE_DEMO = [
   {
+    "version": "1.0.0",
     "title": "Tools for comparing options",
     "criteria": [
       {
@@ -262,6 +263,7 @@ window.COMPARE_TABLE_DEMO = [
     }
   },
   {
+    "version": "1.0.0",
     "title": "Existing similar skills",
     "criteria": [
       {

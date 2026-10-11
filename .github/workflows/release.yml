@@ -21,13 +21,17 @@ jobs:
           [[ $name =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "::error::No valid skill name in the frontmatter of SKILL.md: '$name'"; exit 1; }
           echo "SKILL_NAME=$name" >> "$GITHUB_ENV"
 
-      # The version the table script says it is (which widgets load from the tag) must be the tag's.
-      - name: 🔖 Check the script's version
+      # The versions the table script (which widgets load from the tag) and the skill say they are must be the tag's.
+      - name: 🔖 Check the versions
         env:
           TAG: ${{ github.ref_name }}
         run: |
-          version=$(sed -n "s/^  const VERSION = '\(.*\)';.*/\1/p" assets/compare-table.js)
-          [[ v$version == "$TAG" ]] || { echo "::error::assets/compare-table.js says version '$version', and the tag is $TAG: set VERSION in the tagged commit"; exit 1; }
+          script=$(sed -n "s/^  const VERSION = '\(.*\)';.*/\1/p" assets/compare-table.js)
+          skill=$(sed -n 's/^  version: "\(.*\)"$/\1/p' SKILL.md)
+          fail=0
+          [[ v$script == "$TAG" ]] || { echo "::error::assets/compare-table.js says version '$script', and the tag is $TAG: set VERSION in the tagged commit"; fail=1; }
+          [[ v$skill == "$TAG" ]] || { echo "::error::SKILL.md says version '$skill', and the tag is $TAG: set metadata.version in the tagged commit"; fail=1; }
+          exit $fail
 
       # claude.ai wants the skill's folder, named after the skill, at the top of the zip.
       - name: 📦 Pack the skill
@@ -40,7 +44,9 @@ jobs:
           args=(); for path in "${ignored[@]}"; do args+=(":(exclude,literal)$path"); done
           # A tiny README, in place of the repository's, points back to the repository at this version.
           repo_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
-          printf '# %s\n\nVersion [%s](%s/tree/%s) of the skill: %s\n' "$SKILL_NAME" "$TAG" "$repo_url" "$TAG" "$repo_url" > "$RUNNER_TEMP/README.md"
+          printf '# %s\n'                                         "$SKILL_NAME"                                                                     >  "$RUNNER_TEMP/README.md"
+          printf '\nVersion [%s](%s) of the skill: %s\n'          "$TAG" "$repo_url/tree/$TAG" "$repo_url"                                          >> "$RUNNER_TEMP/README.md"
+          printf '\nSee [latest version](%s) ([download](%s))\n'  "$repo_url/releases/latest" "$repo_url/releases/latest/download/$SKILL_NAME.zip"  >> "$RUNNER_TEMP/README.md"
           git archive --prefix="$SKILL_NAME/" --add-file="$RUNNER_TEMP/README.md" -o "$SKILL_NAME.zip" HEAD -- . "${args[@]}"
 
       - name: 🧪 Check the zip

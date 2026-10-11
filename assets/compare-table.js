@@ -787,11 +787,13 @@
     // The box about the skill: the same box as the details, opened by the GitHub button of the hint,
     // which stays its close button (red on hover) instead of becoming a cross.
     function aboutHtml() {
+      // The version of the skill that wrote the data, when it says so.
+      const dataVersion = typeof DATA.version === 'string' ? DATA.version.replace(/^v/, '') : '';
       return '<div class="ct-details ct-about-box">' +
         `<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="Close" title="Close (Esc)">${GITHUB_MARK}</span>` +
         '<div class="ct-details-body">' +
         // Laid out like the details: a path, then a status line.
-        `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> View ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ' <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="Fetch the latest version of the view only for this table, not of the skill itself">↻ Update</span>' + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
+        `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> ${dataVersion ? `Data ${link(`${REPO}/releases/tag/v${encodeURIComponent(dataVersion)}`, `v${escapeHtml(dataVersion)}`)} <span class="ct-dim">&gt;</span> ` : ''}View ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ' <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="Fetch the latest version of the view only for this table, not of the skill itself">↻ Update</span>' + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
         '<div style="margin-top:2px"><span class="ct-muted">🛠️ agent skill</span><span class="ct-muted"> · </span>Surveys and compares options before choosing anything, in any domain.</div>' +
         shieldsHtml() +
         `<div class="ct-muted" style="margin-top:8px">${link(REPO, 'Repository')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:bug')}&labels=bug`, 'Report a bug')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:enhancement')}&labels=enhancement`, 'Request a feature')} · ${link(`${REPO}/releases`, 'Releases')}</div>` +
