@@ -28,7 +28,11 @@ replace the `<script src="…">` line with `<script>`, the content of `compare-t
 
 ```json
 {
+  "type": "options-table",
+  "usage": "Visualize with the compare-options skill: https://github.com/cryhot/agent-skill-compare-options",
   "version": "x.y.z",
+  "date": "YYYY-MM-DD",
+  "prompt": "the user's request, in their words",
   "title": "Name of this table in the report",
   "criteria": [
     {"id": "fit", "label": "Fit", "type": "grade", "info": "what it measures", "soft": true},
@@ -60,7 +64,13 @@ Criterion types, and the values of `v`:
 | `bool` (no preferred answer) | `true` `false` `null` | ✅ ❌ ❔, not rated |
 | `cat` | a key of `options`, or `null` | the option's emoji, not rated |
 
-- `version` comes first, and `x.y.z` stands for the `metadata.version` of this skill, in the frontmatter of [`SKILL.md`](../SKILL.md): write that value, not the placeholder.
+- The fields before `title` describe the data itself, are all optional, and come first, in that order:
+  - `type`: always `"options-table"`, so that whoever opens the JSON alone knows what it is.
+  - `usage`: one sentence telling an agent that finds the JSON alone how to display it, with the link of the skill.
+  - `version`: `x.y.z` stands for the `metadata.version` of this skill, in the frontmatter of [`SKILL.md`](../SKILL.md): write that value, not the placeholder.
+  - `date`: the day of the survey, as `YYYY-MM-DD` (the user's day), as facts like stars or releases hold for that day.
+    It shows in grey after the title, in the markdown export, and when hovering the data version in the box about the skill.
+  - `prompt`: the user's request that this table answers, in their words, to regenerate a similar table. It shows when hovering the title.
 - A `grade` criterion can also be `"hard": true`: use `incompatible` for the candidates that break it.
   `"soft": true` marks a soft constraint given by the user.
 - `info` of a criterion shows in its header tooltip and in the details title.

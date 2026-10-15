@@ -2,7 +2,11 @@
 // The first one is the table of the README's screenshot.
 window.COMPARE_TABLE_DEMO = [
   {
+    "type": "options-table",
+    "usage": "Visualize with the compare-options skill: https://github.com/cryhot/agent-skill-compare-options",
     "version": "1.0.0",
+    "date": "2026-10-07",
+    "prompt": "tools for comparing options (eg. software tools, libraries, web services, phone apps, hardware, furniture, cars, marketplace skills or extensions)",
     "title": "Tools for comparing options",
     "criteria": [
       {
@@ -263,6 +267,8 @@ window.COMPARE_TABLE_DEMO = [
     }
   },
   {
+    "type": "options-table",
+    "usage": "Visualize with the compare-options skill: https://github.com/cryhot/agent-skill-compare-options",
     "version": "1.0.0",
     "title": "Existing similar skills",
     "criteria": [

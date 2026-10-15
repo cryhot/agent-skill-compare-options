@@ -72,7 +72,9 @@
   color: var(--text-primary, #f1efe8);
 }
 .ct:focus { outline: none; }
-.ct .ct-title { font-size: 15px; font-weight: 500; margin: 0 0 8px; }
+.ct .ct-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; margin: 0 0 8px; }
+.ct .ct-title { font-size: 15px; font-weight: 500; }
+.ct .ct-date { font-size: 12px; }
 .ct .ct-muted { color: var(--ct-text-3); }
 .ct .ct-dim { color: var(--ct-text-3); font-weight: 400; }
 
@@ -282,6 +284,7 @@
     const canPrompt = typeof sendPrompt === 'function';
     if (!canPrompt) root.classList.add('ct-page');
     const title = DATA.title || 'comparison';
+    const dataDate = typeof DATA.date === 'string' ? DATA.date : '';
     const criterionIds = DATA.criteria.map(c => c.id);
     const asList = x => Array.isArray(x) ? x : [];
     const initialView = DATA.view || {};
@@ -309,7 +312,7 @@
     // ── Markdown ──────────────────────────────────────────────────────────
 
     const escapeHtml = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
-    const link = (url, text) => `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
+    const link = (url, text, tip) => `<a href="${url}" target="_blank" rel="noopener"${tip ? ` title="${escapeHtml(tip)}"` : ''}>${text}</a>`;
     // The only place that names the repository: the links, the badges and the skill's name come from it.
     const SLUG = 'cryhot/agent-skill-compare-options';
     const REPO = `https://github.com/${SLUG}`;
@@ -793,7 +796,7 @@
         `<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="Close" title="Close (Esc)">${GITHUB_MARK}</span>` +
         '<div class="ct-details-body">' +
         // Laid out like the details: a path, then a status line.
-        `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> ${dataVersion ? `Data ${link(`${REPO}/releases/tag/v${encodeURIComponent(dataVersion)}`, `v${escapeHtml(dataVersion)}`)} <span class="ct-dim">&gt;</span> ` : ''}View ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ' <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="Fetch the latest version of the view only for this table, not of the skill itself">↻ Update</span>' + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
+        `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> ${dataVersion || dataDate ? `${dataVersion ? 'Data' : `<span title="${escapeHtml(dataDate)}">Data</span>`}${dataVersion ? ' ' + link(`${REPO}/releases/tag/v${encodeURIComponent(dataVersion)}`, `v${escapeHtml(dataVersion)}`, dataDate) : ''} <span class="ct-dim">&gt;</span> ` : ''}View ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ' <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="Fetch the latest version of the view only for this table, not of the skill itself">↻ Update</span>' + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
         '<div style="margin-top:2px"><span class="ct-muted">🛠️ agent skill</span><span class="ct-muted"> · </span>Surveys and compares options before choosing anything, in any domain.</div>' +
         shieldsHtml() +
         `<div class="ct-muted" style="margin-top:8px">${link(REPO, 'Repository')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:bug')}&labels=bug`, 'Report a bug')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:enhancement')}&labels=enhancement`, 'Request a feature')} · ${link(`${REPO}/releases`, 'Releases')}</div>` +
@@ -810,7 +813,7 @@
         ...L.scale.map(k => [SCALE[k].emoji, SCALE[k].label]),
         ...L.categories.flatMap(g => g.options.map(o => [o.emoji, o.label])),
       ];
-      let out = DATA.title ? `**${text(DATA.title)}**\n\n` : '';
+      let out = DATA.title ? `**${text(DATA.title)}**${dataDate ? ` (${text(dataDate)})` : ''}\n\n` : '';
       if (legend.length) {
         out += `| ${legend.map(x => x[0]).join(' | ')} |\n|${'---|'.repeat(legend.length)}\n| ${legend.map(x => x[1]).join(' | ')} |\n\n`;
       }
@@ -1015,7 +1018,9 @@
       const V = visibleCriteria(), R = rows(), sel = state.open ? selection() : null;
       const [openType, openCi, , openId] = state.open ? state.open.split('|') : [];
 
-      let html = DATA.title ? `<div class="ct-title">${escapeHtml(DATA.title)}</div>` : '';
+      let html = DATA.title || dataDate ? '<div class="ct-head">' +
+        (DATA.title ? `<div class="ct-title"${typeof DATA.prompt === 'string' && DATA.prompt ? ` title="${escapeHtml(DATA.prompt)}"` : ''}>${escapeHtml(DATA.title)}</div>` : '') +
+        (dataDate ? `<div class="ct-date ct-muted">· ${escapeHtml(dataDate)}</div>` : '') + '</div>' : '';
       html += `<div class="ct-legend">${legendHtml()}</div>`;
 
       html += '<div class="ct-wrap"><table>';
