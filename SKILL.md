@@ -2,7 +2,7 @@
 name: compare-options
 description: Survey and compare options before choosing or building anything, in any domain — software tools, libraries, web services, phone apps, hardware, furniture, cars, marketplace skills or extensions. Use it whenever the user asks for a state of the art, for alternatives, "is there something that…", "which X should I pick", how X compares to similar things, or before building something that may already exist. Use it also when the user gives a set of options to compare.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   authors: Jean-Raphaël Gaglione, Claude Opus 5.5
 ---
 
