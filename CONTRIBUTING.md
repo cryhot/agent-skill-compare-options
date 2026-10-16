@@ -16,6 +16,17 @@ Its bar changes one key of the address at a time, and leaves the others untouche
 - `full`, which the _full page_ link next to each table sets, renders only the first matching table, as a page of its own: no bar and no margin.
 
 
+## Private data
+
+Keep private data and information about users out of the skill and the repository:
+the prompt, the script, the demo, the documentation, the commit messages, and issues or pull requests.
+This covers names, emails, paths of a machine, keys or tokens, and real conversations, surveys or tables made for someone.
+Examples and demo data are invented or public, and a table taken from a real session is anonymized first.
+
+The view keeps to that too: it sends none of the table's content anywhere,
+and only loads its script, the code highlighter and the badges from public hosts.
+
+
 ## Commit messages
 
 Write the subject as `tag(scope): Message`, as in `feat(view): Fit the columns to their content`.
