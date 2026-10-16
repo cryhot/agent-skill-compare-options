@@ -265,21 +265,91 @@
     return highlighter;
   }
 
+  // The view's own texts, one table per language. To add a language, add a table under its tag (`fr`, `pt-BR`...):
+  // it needs only the keys it translates, as the others stay English.
+  // A text with a variable part is a function.
+  // The table that fits the `lang` of the data (the closest one, or English) is the one the view speaks.
+  // A key ending in `Tip` (or `tip`, in a group) is a text that shows on hover (a `title`),
+  // and one ending in `Label` (or `label`) is a text for screen readers (an `aria-label`): neither is read on the page.
+  // `T.about` is the box about the skill, `T.action` the buttons under the table, and `T.prompt` what they send to the chat.
+  const LOCALES = {
+    en: {
+      scale: { perfect: 'perfect', good: 'good', passing: 'passing', weak: 'weak', bad: 'bad', incompatible: 'incompatible', unknown: 'unknown', irrelevant: 'irrelevant' },
+      yes: 'yes', no: 'no', unknown: 'unknown',
+      hard: 'hard constraint', soft: 'soft constraint',
+      summary: 'summary',
+      hints: ['Click an emoji for info, then arrows to navigate', 'Click a criterion to sort, drag to reorder', 'Click a label or group to hide'],
+      candidate: 'Candidate',
+      allHidden: 'All candidates are hidden by the legend.',
+      legend: 'Legend', hiddenCriteria: 'Hidden criteria', none: 'none', sources: 'Sources',
+      noJustification: 'no justification recorded',
+      markTip: 'Click for details, then arrows to move',
+      sortSummaryTip: 'Click: sort by summary first (again to stop)',
+      sortTip: 'Click: sort by it first (again to stop)\nDrag: reorder, or drop on the legend to hide\nMiddle click: hide',
+      flipTip: 'Click: flip the direction\nMiddle click: stop sorting by it',
+      hideTip: 'Hide this criterion',
+      chipTip: off => `Click: ${off ? 'show' : 'hide'} the candidates with this mark\nMiddle click: hide them`,
+      groupTip: off => `Click: ${off ? 'show all' : 'hide all'}\nMiddle click: hide all`,
+      hiddenGroupTip: any => `Click: ${any ? 'show' : 'hide'} all criteria\nMiddle click: hide all criteria\nDrop a criterion here to hide it`,
+      hiddenChipTip: 'Click: show this criterion again\nDrag: reorder, or drop on the table to show it there',
+      goToTip: 'Show its details',
+      closeTip: 'Close (Esc)', closeLabel: 'Close details',
+      about: {
+        label: 'About this skill', tip: skill => `About ${skill}, on GitHub`,
+        closeLabel: 'Close the box about the skill', data: 'Data', view: 'View',
+        update: 'Update', updateTip: 'Fetch the latest version of the view only for this table, not of the skill itself',
+        fetching: 'Fetching the latest version…', noNewer: v => `No newer version found, v${v}`, updated: v => `Updated to v${v}`,
+        fetchFailed: 'Could not fetch the latest version',
+        kind: 'agent skill', description: 'Surveys and compares options before choosing anything, in any domain.',
+        repository: 'Repository', bug: 'Report a bug', feature: 'Request a feature', releases: 'Releases',
+      },
+      action: {
+        sendFailed: err => 'Could not send: ' + err,
+        exportMarkdown: 'Export as markdown', exportMarkdownTip: 'Send this view (filters, order, hidden criteria) to the chat as a markdown table',
+        showMarkdown: 'Show as markdown', showMarkdownTip: 'Show this view as a markdown table', hideMarkdownTip: 'Hide the markdown table',
+        exportArtifact: 'Export as artifact', exportArtifactTip: "Ask Claude to publish the whole report as a shareable artifact page, keeping this table's view",
+        exploreCandidate: 'Explore candidate', exploreCandidateTip: who => `Ask Claude to research ${who} in more depth`,
+        exploreEvaluation: 'Explore evaluation', exploreEvaluationTip: (criterion, who) => `Ask Claude to dig into the "${criterion}" rating of ${who}`,
+      },
+      markdownCandidate: 'Candidate', markdownHard: '(hard)',
+      markdownHiddenCriteria: list => `Hidden criteria: ${list}.`, markdownHiddenMarks: list => `Hidden marks: ${list}.`,
+      prompt: {
+        markdown: md => 'Print this comparison view as markdown, as is:\n\n' + md,
+        artifact: (title, view) => `Publish the comparison report as an artifact, with all its tables. Restore the "${title}" table in this view state: ` + view,
+        candidate: (who, title) => `Explore ${who} in more depth, from the "${title}" comparison.`,
+        evaluation: (criterion, who, title, rating, text) => `Explore the "${criterion}" evaluation of ${who}, from the "${title}" comparison. Current rating: ${rating}, "${text}". Verify it and go deeper.`,
+      },
+    },
+  };
+  // The language of a table's view, for a language tag: the closest of the locales (fr-CA, then fr), or English.
+  const baseLang = tag => String(tag || '').toLowerCase().split(/[-_]/)[0];
+  const pickLocale = tag => (LOCALES[String(tag || '').toLowerCase()] ? String(tag).toLowerCase() : LOCALES[baseLang(tag)] ? baseLang(tag) : 'en');
+
+
   function mount(root, DATA) {
+
+    // Two languages: the data's (DATA.lang, the table's own texts), and the view's (the texts of LOCALES).
+    const dataLang = typeof DATA.lang === 'string' ? DATA.lang.trim() : '';
+    const uiLang = pickLocale(dataLang);
+    // English fills what the language lacks.
+    const T = Object.fromEntries(Object.entries(LOCALES.en).map(([key, text]) => [key,
+      text && typeof text === 'object' && !Array.isArray(text) ? { ...text, ...LOCALES[uiLang][key] } : key in LOCALES[uiLang] ? LOCALES[uiLang][key] : text]));
+    // The `lang` attribute of the texts of the view, when the data speaks another language.
+    const ui = dataLang && baseLang(dataLang) !== uiLang ? ` lang="${uiLang}"` : '';
+    if (dataLang) root.lang = dataLang;
 
     // The rating scale; `level` orders the ratings, and is null for the marks that are not ratings.
     const SCALE = {
-      perfect:      { level: 5,    color: '#1E6FD9', label: 'perfect',      emoji: '🔵' },
-      good:         { level: 4,    color: '#7CB342', label: 'good',         emoji: '🟢' },
-      passing:      { level: 3,    color: '#FDD835', label: 'passing',      emoji: '🟡' },
-      weak:         { level: 2,    color: '#FB8C00', label: 'weak',         emoji: '🟠' },
-      bad:          { level: 1,    color: '#E53935', label: 'bad',          emoji: '🔴' },
-      incompatible: { level: 0,    color: '#9C27B0', label: 'incompatible', emoji: '🟣' },
-      unknown:      { level: null, color: '#E0E0E0', label: 'unknown',      emoji: '⚪' },
-      irrelevant:   { level: null, color: '#424242', label: 'irrelevant',   emoji: '⚫' },
+      perfect:      { level: 5,    color: '#1E6FD9', label: T.scale.perfect,      emoji: '🔵' },
+      good:         { level: 4,    color: '#7CB342', label: T.scale.good,         emoji: '🟢' },
+      passing:      { level: 3,    color: '#FDD835', label: T.scale.passing,      emoji: '🟡' },
+      weak:         { level: 2,    color: '#FB8C00', label: T.scale.weak,         emoji: '🟠' },
+      bad:          { level: 1,    color: '#E53935', label: T.scale.bad,          emoji: '🔴' },
+      incompatible: { level: 0,    color: '#9C27B0', label: T.scale.incompatible, emoji: '🟣' },
+      unknown:      { level: null, color: '#E0E0E0', label: T.scale.unknown,      emoji: '⚪' },
+      irrelevant:   { level: null, color: '#424242', label: T.scale.irrelevant,   emoji: '⚫' },
     };
     const SCALE_KEYS = Object.keys(SCALE);
-    const HINT = 'Click an emoji for info, then arrows to navigate  ·  Click a criterion to sort, drag to reorder  ·  Click a label or group to hide';
 
     const canPrompt = typeof sendPrompt === 'function';
     if (!canPrompt) root.classList.add('ct-page');
@@ -394,7 +464,7 @@
     const orderedCriteria = () => state.order.map(criterion);
     const visibleCriteria = () => orderedCriteria().filter(c => !state.hidden.has(c.id));
     const constraintClass = c => c.hard ? 'ct-hard' : c.soft ? 'ct-soft' : '';
-    const constraintText = c => c.hard ? 'hard constraint' : c.soft ? 'soft constraint' : '';
+    const constraintText = c => c.hard ? T.hard : c.soft ? T.soft : '';
     const levelOf = scaleKey => SCALE[scaleKey].level;
     const scaleKeyOf = level => level == null ? 'unknown' : SCALE_KEYS.find(k => SCALE[k].level === level);
 
@@ -404,11 +474,11 @@
       if (c.type === 'grade') return { scale: SCALE[v] ? v : 'unknown' };
       if (c.type === 'check') return {
         scale: v == null ? 'unknown' : v ? (c.hard ? 'perfect' : 'good') : (c.hard ? 'incompatible' : 'bad'),
-        answer: v == null ? null : v ? 'yes' : 'no',
+        answer: v == null ? null : v ? T.yes : T.no,
       };
-      if (c.type === 'bool') return { emoji: v == null ? '❔' : v ? '✅' : '❌', answer: v == null ? 'unknown' : v ? 'yes' : 'no' };
+      if (c.type === 'bool') return { emoji: v == null ? '❔' : v ? '✅' : '❌', answer: v == null ? T.unknown : v ? T.yes : T.no };
       const option = v != null && c.options && c.options[v];
-      return option ? { category: v, emoji: option.emoji, answer: option.label } : { emoji: '❔', answer: 'unknown' };
+      return option ? { category: v, emoji: option.emoji, answer: option.label } : { emoji: '❔', answer: T.unknown };
     }
     const markEmoji = m => m.scale ? SCALE[m.scale].emoji : m.emoji;
     const markLabel = m => m.scale ? SCALE[m.scale].label + (m.answer ? ' · ' + m.answer : '') : m.answer;
@@ -569,7 +639,7 @@
     const markHtml = (emoji, key, tip, color) =>
       `<span class="ct-mark${state.open === key ? ' ct-selected' : ''}" data-open="${key}"` +
       (color ? ` style="--ct-halo-color:${color}"` : '') +
-      ` title="${escapeHtml(tip)}\nClick for details, then arrows to move">${emoji}</span>`;
+      `${ui} title="${escapeHtml(tip)}\n${T.markTip}">${emoji}</span>`;
 
     function cellHtml(r, c) {
       return cellLines(r, c).map(l =>
@@ -586,7 +656,7 @@
       const summary = SCALE[scaleKeyOf(candidateSummary(r.variants))];
       const onlyVariant = !hasManyVariants(r) && r.variants[0].name ? r.variants[0] : null;
       let html = '<div class="ct-line">' +
-        markHtml(summary.emoji, `n|${r.ci}|${onlyVariant ? onlyVariant.index : -1}`, summary.label + ' · summary', summary.color) +
+        markHtml(summary.emoji, `n|${r.ci}|${onlyVariant ? onlyVariant.index : -1}`, summary.label + ' · ' + T.summary, summary.color) +
         `<div><span style="font-weight:500">${name}</span>` +
         (onlyVariant ? ` <span class="ct-dim">›</span> ${escapeHtml(onlyVariant.name)}` : '') +
         (cd.sub ? `<div class="ct-muted" style="font-size:12px">${escapeHtml(cd.sub)}</div>` : '') +
@@ -595,7 +665,7 @@
         html += r.variants.map(u => {
           const s = SCALE[scaleKeyOf(variantSummary(u))];
           return '<div class="ct-line" style="padding-left:14px;font-size:12px">' +
-            markHtml(s.emoji, `n|${r.ci}|${u.index}`, s.label + ' · summary', s.color) +
+            markHtml(s.emoji, `n|${r.ci}|${u.index}`, s.label + ' · ' + T.summary, s.color) +
             `<span>${escapeHtml(u.name)}</span></div>`;
         }).join('');
       }
@@ -605,14 +675,14 @@
     function sortArrowHtml(id) {
       const S = activeSort(), i = S.findIndex(s => s.id === id);
       if (i < 0) return '';
-      return `<span class="ct-sort-arrow" data-flip="${id}" title="Click: flip the direction\nMiddle click: stop sorting by it">${S[i].dir === 'down' ? '↓' : '↑'}</span>` +
+      return `<span class="ct-sort-arrow" data-flip="${id}"${ui} title="${T.flipTip}">${S[i].dir === 'down' ? '↓' : '↑'}</span>` +
         (S.length > 1 ? `<small>${i + 1}</small>` : '');
     }
 
     function headerHtml(id, cls, label, extra, tip, draggable) {
       return `<th class="${cls} ct-sortable" data-sort="${id}"${draggable ? ` draggable="true" data-drag="${id}"` : ''} title="${escapeHtml(tip)}">` +
         `<div class="ct-head"><span class="ct-sort-slot">${sortArrowHtml(id)}</span><div>${label}${extra}</div></div>` +
-        (draggable ? `<span class="ct-hide" data-hide="${id}" title="Hide this criterion">×</span>` : '') +
+        (draggable ? `<span class="ct-hide" data-hide="${id}"${ui} title="${T.hideTip}">×</span>` : '') +
         '</th>';
     }
 
@@ -640,33 +710,34 @@
 
     function legendHtml() {
       const L = legendKeys();
-      const item = (key, emoji, label) =>
-        `<span class="ct-chip${state.off.has(key) ? ' ct-off' : ''}" data-mark="${key}"` +
-        ` title="Click: ${state.off.has(key) ? 'show' : 'hide'} the candidates with this mark\nMiddle click: hide them">${emoji} ${escapeHtml(label)}</span>`;
-      const group = (keys, label) =>
-        `<span class="ct-group" data-group="${keys.join(',')}"` +
-        ` title="Click: ${keys.some(k => state.off.has(k)) ? 'show all' : 'hide all'}\nMiddle click: hide all">${escapeHtml(label)}</span>`;
+      // `own`: the label is a text of the view, not of the data.
+      const item = (key, emoji, label, own) =>
+        `<span class="ct-chip${state.off.has(key) ? ' ct-off' : ''}" data-mark="${key}"${own ? ui : ''}` +
+        ` title="${T.chipTip(state.off.has(key))}">${emoji} ${escapeHtml(label)}</span>`;
+      const group = (keys, label, own) =>
+        `<span class="ct-group" data-group="${keys.join(',')}"${own ? ui : ''}` +
+        ` title="${T.groupTip(keys.some(k => state.off.has(k)))}">${escapeHtml(label)}</span>`;
 
       let html = '';
       if (L.scale.length) {
-        html += `<div class="ct-legend-line">${group(L.scale, 'Legend')}${L.scale.map(k => item(k, SCALE[k].emoji, SCALE[k].label)).join('')}</div>`;
+        html += `<div class="ct-legend-line">${group(L.scale, T.legend, true)}${L.scale.map(k => item(k, SCALE[k].emoji, SCALE[k].label, true)).join('')}</div>`;
       }
       for (const g of L.categories) {
         html += `<div class="ct-legend-line">${group(g.options.map(o => o.key), g.criterion.label)}${g.options.map(o => item(o.key, o.emoji, o.label)).join('')}</div>`;
       }
       const hidden = orderedCriteria().filter(c => state.hidden.has(c.id));
       html += '<div class="ct-legend-line">' +
-        `<span class="ct-group" data-group="_criteria" title="Click: ${hidden.length ? 'show' : 'hide'} all criteria\nMiddle click: hide all criteria\nDrop a criterion here to hide it">Hidden criteria</span>` +
+        `<span class="ct-group" data-group="_criteria"${ui} title="${T.hiddenGroupTip(hidden.length > 0)}">${T.hiddenCriteria}</span>` +
         (hidden.length
           ? hidden.map(c => `<span class="ct-chip ct-off ${constraintClass(c)}" draggable="true" data-drag="${c.id}" data-show="${c.id}"` +
-              ` title="Click: show this criterion again\nDrag: reorder, or drop on the table to show it there">${escapeHtml(c.label)}</span>`).join('')
-          : '<span class="ct-chip ct-muted" style="cursor:default">none</span>') +
+              ` title="${T.hiddenChipTip}">${escapeHtml(c.label)}</span>`).join('')
+          : `<span class="ct-chip ct-muted"${ui} style="cursor:default">${T.none}</span>`) +
         '</div>';
       return html;
     }
 
     const sourcesHtml = list => list && list.length
-      ? '<div style="margin-top:6px;font-size:12px">Sources: ' + list.map(s => typeof s === 'string'
+      ? `<div style="margin-top:6px;font-size:12px"><span${ui}>${T.sources}:</span> ` + list.map(s => typeof s === 'string'
           ? link(escapeHtml(s), escapeHtml(s.replace(/^https?:\/\//, '').slice(0, 60)))
           : link(escapeHtml(s.u), escapeHtml(s.t))).join(' · ') + '</div>'
       : '';
@@ -680,7 +751,7 @@
       if (type === 'n') {
         const s = SCALE[scaleKeyOf(variant ? variantSummary(u) : candidateSummary(variantsOf(cd)))];
         const subject = variant || cd;
-        Object.assign(o, { color: s.color, status: `${s.emoji} ${s.label} · summary`, body: subject.info || '', sources: subject.src });
+        Object.assign(o, { color: s.color, status: `${s.emoji} ${s.label} · ${T.summary}`, body: subject.info || '', sources: subject.src });
       } else {
         const c = criterion(id), cell = u.cell(id), mark = markOf(c, cell);
         Object.assign(o, {
@@ -703,7 +774,7 @@
     }
 
     function detailsHtml(o) {
-      const goTo = (text, key) => `<span class="ct-link" data-goto="${key}" title="Show its details">${escapeHtml(text)}</span>`;
+      const goTo = (text, key) => `<span class="ct-link" data-goto="${key}" title="${T.goToTip}">${escapeHtml(text)}</span>`;
       const aside = (s, cls = '') => s ? ` <span class="ct-dim">· <span class="${cls}">${escapeHtml(s)}</span></span>` : '';
       const nameLink = (name, url) => url ? link(escapeHtml(url), escapeHtml(name)) : escapeHtml(name);
       const cd = o.candidate, variantName = o.variant ? o.variant.name : o.u.name;
@@ -724,10 +795,10 @@
 
       // Status line: the mark and the cell's text; the longer text goes below a rule.
       const status = [`<span class="ct-muted">${escapeHtml(o.status)}</span>`];
-      if (o.type === 'c') status.push(o.text ? markdown(o.text, true) : '<span class="ct-muted">no justification recorded</span>');
+      if (o.type === 'c') status.push(o.text ? markdown(o.text, true) : `<span class="ct-muted"${ui}>${T.noJustification}</span>`);
 
       return `<div class="ct-details"${o.color ? ` style="--ct-halo-color:${o.color}"` : ''}>` +
-        '<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="Close details" title="Close (Esc)">×</span>' +
+        `<span class="ct-close" role="button" tabindex="0" data-close="1"${ui} aria-label="${T.closeLabel}" title="${T.closeTip}">×</span>` +
         '<div class="ct-details-body">' +
         `<div style="font-weight:500">${path.join(' <span class="ct-dim">&gt;</span> ')}</div>` +
         `<div style="margin-top:2px">${status.join('<span class="ct-muted"> · </span>')}</div>` +
@@ -792,14 +863,14 @@
     function aboutHtml() {
       // The version of the skill that wrote the data, when it says so.
       const dataVersion = typeof DATA.version === 'string' ? DATA.version.replace(/^v/, '') : '';
-      return '<div class="ct-details ct-about-box">' +
-        `<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="Close" title="Close (Esc)">${GITHUB_MARK}</span>` +
+      return `<div class="ct-details ct-about-box"${ui}>` +
+        `<span class="ct-close" role="button" tabindex="0" data-close="1" aria-label="${T.about.closeLabel}" title="${T.closeTip}">${GITHUB_MARK}</span>` +
         '<div class="ct-details-body">' +
         // Laid out like the details: a path, then a status line.
-        `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> ${dataVersion || dataDate ? `${dataVersion ? 'Data' : `<span title="${escapeHtml(dataDate)}">Data</span>`}${dataVersion ? ' ' + link(`${REPO}/releases/tag/v${encodeURIComponent(dataVersion)}`, `v${escapeHtml(dataVersion)}`, dataDate) : ''} <span class="ct-dim">&gt;</span> ` : ''}View ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ' <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="Fetch the latest version of the view only for this table, not of the skill itself">↻ Update</span>' + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
-        '<div style="margin-top:2px"><span class="ct-muted">🛠️ agent skill</span><span class="ct-muted"> · </span>Surveys and compares options before choosing anything, in any domain.</div>' +
+        `<div style="font-weight:500">${link(REPO, SKILL)} <span class="ct-dim">&gt;</span> ${dataVersion || dataDate ? `${dataVersion ? T.about.data : `<span title="${escapeHtml(dataDate)}">${T.about.data}</span>`}${dataVersion ? ' ' + link(`${REPO}/releases/tag/v${encodeURIComponent(dataVersion)}`, `v${escapeHtml(dataVersion)}`, dataDate) : ''} <span class="ct-dim">&gt;</span> ` : ''}${T.about.view} ${link(`${REPO}/releases/tag/v${VERSION}`, `v${VERSION}`)}${SRC ? ` <span class="ct-dim">·</span> <span class="ct-link ct-muted" data-refresh="1" title="${T.about.updateTip}">↻ ${T.about.update}</span>` + (state.update ? ` <span class="ct-muted" style="font-weight:400">(${escapeHtml(state.update)})</span>` : '') : ''}</div>` +
+        `<div style="margin-top:2px"><span class="ct-muted">🛠️ ${T.about.kind}</span><span class="ct-muted"> · </span>${T.about.description}</div>` +
         shieldsHtml() +
-        `<div class="ct-muted" style="margin-top:8px">${link(REPO, 'Repository')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:bug')}&labels=bug`, 'Report a bug')} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:enhancement')}&labels=enhancement`, 'Request a feature')} · ${link(`${REPO}/releases`, 'Releases')}</div>` +
+        `<div class="ct-muted" style="margin-top:8px">${link(REPO, T.about.repository)} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:bug')}&labels=bug`, T.about.bug)} · ${link(`${REPO}/issues?q=${encodeURIComponent('is:issue state:open label:enhancement')}&labels=enhancement`, T.about.feature)} · ${link(`${REPO}/releases`, T.about.releases)}</div>` +
         '</div></div>';
     }
 
@@ -817,7 +888,7 @@
       if (legend.length) {
         out += `| ${legend.map(x => x[0]).join(' | ')} |\n|${'---|'.repeat(legend.length)}\n| ${legend.map(x => x[1]).join(' | ')} |\n\n`;
       }
-      out += `| Candidate | ${V.map(c => text(c.label) + (c.hard ? ' (hard)' : '')).join(' | ')} |\n|${'---|'.repeat(V.length + 1)}\n`;
+      out += `| ${T.markdownCandidate} | ${V.map(c => text(c.label) + (c.hard ? ' ' + T.markdownHard : '')).join(' | ')} |\n|${'---|'.repeat(V.length + 1)}\n`;
       for (const r of R) {
         const cd = r.candidate, name = cd.url ? `[${text(cd.name)}](${cd.url})` : text(cd.name);
         let head = `${SCALE[scaleKeyOf(candidateSummary(r.variants))].emoji} **${name}**`;
@@ -829,13 +900,13 @@
         out += `| ${head} | ${cells.join(' | ')} |\n`;
       }
       if (state.hidden.size) {
-        out += `\nHidden criteria: ${orderedCriteria().filter(c => state.hidden.has(c.id)).map(c => c.label).join(', ')}.\n`;
+        out += `\n${T.markdownHiddenCriteria(orderedCriteria().filter(c => state.hidden.has(c.id)).map(c => c.label).join(', '))}\n`;
       }
       const offMarks = [
         ...L.scale.filter(k => state.off.has(k)).map(k => SCALE[k].emoji),
         ...L.categories.flatMap(g => g.options).filter(o => state.off.has(o.key)).map(o => o.emoji),
       ];
-      if (offMarks.length) out += `\nHidden marks: ${offMarks.join(' ')}.\n`;
+      if (offMarks.length) out += `\n${T.markdownHiddenMarks(offMarks.join(' '))}\n`;
       return out;
     }
 
@@ -855,7 +926,7 @@
     // Its address gets a query string, which the CDN ignores and the browser's cache does not, so that the browser
     // asks for it again: a script tag needs nothing more than the first load did.
     function refresh() {
-      state.update = 'Fetching the latest version…';
+      state.update = T.about.fetching;
       render();
       const script = document.createElement('script');
       script.src = SRC.split('?')[0] + '?refresh=' + Date.now();
@@ -864,19 +935,19 @@
         const next = root.cloneNode(false), data = document.createElement('script');
         delete next.dataset.ctMounted;
         next.dataset.ctAbout = state.about ? '1' : '';
-        next.dataset.ctUpdate = window.CompareTable.version === VERSION ? `No newer version found, v${VERSION}` : `Updated to v${window.CompareTable.version}`;
+        next.dataset.ctUpdate = window.CompareTable.version === VERSION ? T.about.noNewer(VERSION) : T.about.updated(window.CompareTable.version);
         data.type = 'application/json';
         data.textContent = JSON.stringify({ ...DATA, view: viewState() });
         next.append(data);
         root.replaceWith(next);
         window.CompareTable.mountAll();
       };
-      script.onerror = () => { script.remove(); state.update = 'Could not fetch the latest version'; render(); };
+      script.onerror = () => { script.remove(); state.update = T.about.fetchFailed; render(); };
       document.head.appendChild(script);
     }
 
     function send(prompt) {
-      const fail = err => { state.flash = 'Could not send: ' + err; render(); };
+      const fail = err => { state.flash = T.action.sendFailed(err); render(); };
       try { window.focus(); root.focus({ preventScroll: true }); } catch (e) {}
       setTimeout(() => {
         try {
@@ -1025,11 +1096,11 @@
 
       html += '<div class="ct-wrap"><table>';
       html += '<thead><tr>';
-      html += headerHtml('_sum', 'ct-name', 'Candidate', '', 'Click: sort by summary first (again to stop)');
+      html += headerHtml('_sum', 'ct-name', `<span${ui}>${T.candidate}</span>`, '', T.sortSummaryTip);
       html += V.map(c => headerHtml(
         c.id, '', escapeHtml(c.label),
-        constraintText(c) ? `<span class="ct-constraint ${constraintClass(c)}">${constraintText(c)}</span>` : '',
-        (c.info ? c.info + '\n' : '') + 'Click: sort by it first (again to stop)\nDrag: reorder, or drop on the legend to hide\nMiddle click: hide',
+        constraintText(c) ? `<span class="ct-constraint ${constraintClass(c)}"${ui}>${constraintText(c)}</span>` : '',
+        (c.info ? c.info + '\n' : '') + T.sortTip,
         true,
       )).join('');
       html += '</tr></thead><tbody>';
@@ -1039,26 +1110,26 @@
         html += V.map(c => `<td${selectedRow && openType === 'c' && openId === c.id ? ' class="ct-cell-selected"' : ''}>${cellHtml(r, c)}</td>`).join('');
         html += '</tr>';
       }
-      if (!R.length) html += `<tr><td class="ct-name ct-muted"><div class="ct-name-in">All candidates are hidden by the legend.</div></td>${V.map(() => '<td></td>').join('')}</tr>`;
+      if (!R.length) html += `<tr><td class="ct-name ct-muted"><div class="ct-name-in"${ui}>${T.allHidden}</div></td>${V.map(() => '<td></td>').join('')}</tr>`;
       html += '</tbody></table></div>';
       html += '<div class="ct-name-bar"><div></div></div>';
 
       html += sel ? detailsHtml(sel) : state.about ? aboutHtml()
-        : `<div class="ct-hint">${HINT}<span class="ct-close ct-about" role="button" tabindex="0" data-about="1" aria-label="About this skill" title="About ${SKILL}, on GitHub">${GITHUB_MARK}</span></div>`;
+        : `<div class="ct-hint"${ui}>${T.hints.join('&nbsp; · &nbsp;')}<span class="ct-close ct-about" role="button" tabindex="0" data-about="1" aria-label="${T.about.label}" title="${T.about.tip(SKILL)}">${GITHUB_MARK}</span></div>`;
 
       const halo = color => color ? ` style="--ct-halo-color:${color}"` : '';
-      html += '<div class="ct-actions">';
+      html += `<div class="ct-actions"${ui}>`;
       html += canPrompt
-        ? '<button data-action="markdown" title="Send this view (filters, order, hidden criteria) to the chat as a markdown table">Export as markdown ↗</button>'
-        : `<button data-action="markdown" aria-pressed="${state.showMarkdown}" title="${state.showMarkdown ? 'Hide the markdown table' : 'Show this view as a markdown table'}">Show as markdown</button>`;
+        ? `<button data-action="markdown" title="${T.action.exportMarkdownTip}">${T.action.exportMarkdown} ↗</button>`
+        : `<button data-action="markdown" aria-pressed="${state.showMarkdown}" title="${state.showMarkdown ? T.action.hideMarkdownTip : T.action.showMarkdownTip}">${T.action.showMarkdown}</button>`;
       if (canPrompt) {
-        html += '<button data-action="artifact" title="Ask Claude to publish the whole report as a shareable artifact page, keeping this table\'s view">Export as artifact ↗</button>';
+        html += `<button data-action="artifact" title="${escapeHtml(T.action.exportArtifactTip)}">${T.action.exportArtifact} ↗</button>`;
       }
       if (canPrompt && sel) {
-        html += `<button class="ct-halo-button" data-action="candidate"${halo(sel.whoColor)} title="Ask Claude to research ${escapeHtml(sel.exploreWho)} in more depth">Explore candidate ↗</button>`;
+        html += `<button class="ct-halo-button" data-action="candidate"${halo(sel.whoColor)} title="${escapeHtml(T.action.exploreCandidateTip(sel.exploreWho))}">${T.action.exploreCandidate} ↗</button>`;
       }
       if (canPrompt && sel && sel.type === 'c') {
-        html += `<button class="ct-halo-button" data-action="evaluation"${halo(sel.color)} title="Ask Claude to dig into the &quot;${escapeHtml(sel.criterion.label)}&quot; rating of ${escapeHtml(sel.who)}">Explore evaluation ↗</button>`;
+        html += `<button class="ct-halo-button" data-action="evaluation"${halo(sel.color)} title="${escapeHtml(T.action.exploreEvaluationTip(sel.criterion.label, sel.who))}">${T.action.exploreEvaluation} ↗</button>`;
       }
       if (state.flash) html += `<span class="ct-muted" style="align-self:center;font-size:12px">${escapeHtml(state.flash)}</span>`;
       html += '</div>';
@@ -1148,16 +1219,15 @@
         state.open = null;
         state.about = false;
       } else if (d.action === 'markdown') {
-        if (canPrompt) send('Print this comparison view as markdown, as is:\n\n' + markdownExport());
+        if (canPrompt) send(T.prompt.markdown(markdownExport()));
         else state.showMarkdown = !state.showMarkdown;
       } else if (d.action === 'artifact') {
-        send(`Publish the comparison report as an artifact, with all its tables. Restore the "${title}" table in this view state: ` + JSON.stringify(viewState()));
+        send(T.prompt.artifact(title, JSON.stringify(viewState())));
       } else if (d.action === 'candidate') {
-        send(`Explore ${selection().exploreWho} in more depth, from the "${title}" comparison.`);
+        send(T.prompt.candidate(selection().exploreWho, title));
       } else if (d.action === 'evaluation') {
         const o = selection();
-        send(`Explore the "${o.criterion.label}" evaluation of ${o.who}, from the "${title}" comparison. ` +
-          `Current rating: ${markEmoji(o.mark)} ${markLabel(o.mark)}, "${(o.cell && o.cell.t) || ''}". Verify it and go deeper.`);
+        send(T.prompt.evaluation(o.criterion.label, o.who, title, `${markEmoji(o.mark)} ${markLabel(o.mark)}`, (o.cell && o.cell.t) || ''));
       }
       render();
     });

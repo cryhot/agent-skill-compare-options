@@ -31,6 +31,7 @@ replace the `<script src="…">` line with `<script>`, the content of `compare-t
   "type": "options-table",
   "usage": "Visualize with the compare-options skill: https://github.com/cryhot/agent-skill-compare-options",
   "version": "x.y.z",
+  "lang": "en",
   "date": "YYYY-MM-DD",
   "prompt": "the user's request, in their words",
   "title": "Name of this table in the report",
@@ -68,6 +69,9 @@ Criterion types, and the values of `v`:
   - `type`: always `"options-table"`, so that whoever opens the JSON alone knows what it is.
   - `usage`: one sentence telling an agent that finds the JSON alone how to display it, with the link of the skill.
   - `version`: `x.y.z` stands for the `metadata.version` of this skill, in the frontmatter of [`SKILL.md`](../SKILL.md): write that value, not the placeholder.
+  - `lang`: the language of the texts of the table (`title`, `info`, `t`, `d`, labels), as a BCP 47 tag, lowercase: `fr`, `en`, `pt-BR`.
+    It becomes the `lang` of the table. The view's own texts (hint, buttons, legend, box about the skill...) come in that language if it has been translated,
+    which only English is for now, and are marked with their language when it differs.
   - `date`: the day of the survey, as `YYYY-MM-DD` (the user's day), as facts like stars or releases hold for that day.
     It shows in grey after the title, in the markdown export, and when hovering the data version in the box about the skill.
   - `prompt`: the user's request that this table answers, in their words, to regenerate a similar table. It shows when hovering the title.
