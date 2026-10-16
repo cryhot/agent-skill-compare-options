@@ -281,7 +281,7 @@
       hints: ['Click an emoji for info, then arrows to navigate', 'Click a criterion to sort, drag to reorder', 'Click a label or group to hide'],
       candidate: 'Candidate',
       allHidden: 'All candidates are hidden by the legend.',
-      legend: 'Legend', hiddenCriteria: 'Hidden criteria', none: 'none', sources: 'Sources',
+      legend: 'Legend', hiddenCriteria: 'Hidden criteria', none: 'none', sources: 'Sources:',
       noJustification: 'no justification recorded',
       markTip: 'Click for details, then arrows to move',
       sortSummaryTip: 'Click: sort by summary first (again to stop)',
@@ -322,6 +322,57 @@
         artifact: (title, view) => `Publish the comparison report as an artifact, with all its tables. Restore the "${title}" table in this view state: ` + view,
         candidate: (who, title) => `Explore ${who} in more depth, from the "${title}" comparison.`,
         evaluation: (criterion, who, title, rating, text) => `Explore the "${criterion}" evaluation of ${who}, from the "${title}" comparison. Current rating: ${rating}, "${text}". Verify it and go deeper.`,
+      },
+    },
+    fr: {
+      scale: { perfect: 'parfait', good: 'bon', passing: 'passable', weak: 'faible', bad: 'mauvais', incompatible: 'incompatible', unknown: 'inconnu', irrelevant: 'sans objet' },
+      yes: 'oui', no: 'non', unknown: 'inconnu',
+      hard: 'contrainte stricte', soft: 'contrainte souple',
+      summary: 'synthèse',
+      hints: ['Cliquez sur un emoji pour les détails, puis les flèches pour naviguer', 'Cliquez sur un critère pour trier, glissez pour réordonner', 'Cliquez sur un libellé ou un groupe pour masquer'],
+      candidate: 'Candidat',
+      allHidden: 'Tous les candidats sont masqués par la légende.',
+      legend: 'Légende', hiddenCriteria: 'Critères masqués', none: 'aucun', sources: 'Sources :',
+      noJustification: 'aucune justification enregistrée',
+      markTip: 'Cliquez pour les détails, puis les flèches pour vous déplacer',
+      sortSummaryTip: 'Clic : trier d’abord par la synthèse (encore pour arrêter)',
+      sortTip: 'Clic : trier d’abord par ce critère (encore pour arrêter)\nGlisser : réordonner, ou déposer sur la légende pour masquer\nClic milieu : masquer',
+      flipTip: 'Clic : inverser le sens\nClic milieu : ne plus trier par ce critère',
+      hideTip: 'Masquer ce critère',
+      chipTip: off => `Clic : ${off ? 'afficher' : 'masquer'} les candidats ayant cette marque\nClic milieu : les masquer`,
+      groupTip: off => `Clic : ${off ? 'tout afficher' : 'tout masquer'}\nClic milieu : tout masquer`,
+      hiddenGroupTip: any => `Clic : ${any ? 'afficher' : 'masquer'} tous les critères\nClic milieu : masquer tous les critères\nDéposez un critère ici pour le masquer`,
+      hiddenChipTip: 'Clic : réafficher ce critère\nGlisser : réordonner, ou déposer sur le tableau pour l’y afficher',
+      goToTip: 'Afficher ses détails',
+      closeTip: 'Fermer (Échap)', closeLabel: 'Fermer les détails',
+      about: {
+        label: 'À propos de ce skill', tip: skill => `À propos de ${skill}, sur GitHub`,
+        closeLabel: 'Fermer la boîte à propos du skill', data: 'Données', view: 'Vue',
+        update: 'Mettre à jour', updateTip: 'Récupérer la dernière version de la vue seulement, pour ce tableau, et non celle du skill lui-même',
+        fetching: 'Récupération de la dernière version…', noNewer: v => `Aucune version plus récente, v${v}`, updated: v => `Mis à jour vers v${v}`,
+        fetchFailed: 'Impossible de récupérer la dernière version',
+        kind: 'skill d’agent', description: 'Étudie et compare les options avant de choisir quoi que ce soit, dans tous les domaines.',
+        shieldTips: {
+          repository: 'Le dépôt, sur GitHub', license: 'La licence du skill', release: 'La dernière version du skill',
+          stars: 'L’évolution des étoiles du dépôt', jsdelivr: 'Accès mensuels à la vue sur jsDelivr, qui la sert',
+        },
+        repository: 'Dépôt', bug: 'Signaler un bug', feature: 'Proposer une fonctionnalité', releases: 'Versions',
+      },
+      action: {
+        sendFailed: err => 'Envoi impossible : ' + err,
+        exportMarkdown: 'Exporter en markdown', exportMarkdownTip: 'Envoyer cette vue (filtres, ordre, critères masqués) dans la conversation sous forme de tableau markdown',
+        showMarkdown: 'Afficher en markdown', showMarkdownTip: 'Afficher cette vue sous forme de tableau markdown', hideMarkdownTip: 'Masquer le tableau markdown',
+        exportArtifact: 'Exporter en artefact', exportArtifactTip: 'Demander à Claude de publier tout le rapport comme page d’artefact partageable, en gardant la vue de ce tableau',
+        exploreCandidate: 'Explorer le candidat', exploreCandidateTip: who => `Demander à Claude d’étudier ${who} plus en profondeur`,
+        exploreEvaluation: 'Explorer l’évaluation', exploreEvaluationTip: (criterion, who) => `Demander à Claude d’approfondir la note « ${criterion} » de ${who}`,
+      },
+      markdownCandidate: 'Candidat', markdownHard: '(strict)',
+      markdownHiddenCriteria: list => `Critères masqués : ${list}.`, markdownHiddenMarks: list => `Marques masquées : ${list}.`,
+      prompt: {
+        markdown: md => 'Affiche cette vue de comparaison en markdown, telle quelle :\n\n' + md,
+        artifact: (title, view) => `Publie le rapport de comparaison comme artefact, avec tous ses tableaux. Rétablis le tableau « ${title} » dans cet état de vue : ` + view,
+        candidate: (who, title) => `Étudie ${who} plus en profondeur, d’après la comparaison « ${title} ».`,
+        evaluation: (criterion, who, title, rating, text) => `Étudie l’évaluation « ${criterion} » de ${who}, d’après la comparaison « ${title} ». Note actuelle : ${rating}, « ${text} ». Vérifie-la et va plus loin.`,
       },
     },
   };
@@ -742,7 +793,7 @@
     }
 
     const sourcesHtml = list => list && list.length
-      ? `<div style="margin-top:6px;font-size:12px"><span${ui}>${T.sources}:</span> ` + list.map(s => typeof s === 'string'
+      ? `<div style="margin-top:6px;font-size:12px"><span${ui}>${T.sources}</span> ` + list.map(s => typeof s === 'string'
           ? link(escapeHtml(s), escapeHtml(s.replace(/^https?:\/\//, '').slice(0, 60)))
           : link(escapeHtml(s.u), escapeHtml(s.t))).join(' · ') + '</div>'
       : '';

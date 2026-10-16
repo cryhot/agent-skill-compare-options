@@ -71,7 +71,7 @@ Criterion types, and the values of `v`:
   - `version`: `x.y.z` stands for the `metadata.version` of this skill, in the frontmatter of [`SKILL.md`](../SKILL.md): write that value, not the placeholder.
   - `lang`: the language of the texts of the table (`title`, `info`, `t`, `d`, labels), as a BCP 47 tag, lowercase: `fr`, `en`, `pt-BR`.
     It becomes the `lang` of the table. The view's own texts (hint, buttons, legend, box about the skill...) come in that language if it has been translated,
-    which only English is for now, and are marked with their language when it differs.
+    which English and French are so far, and are marked with their language when it differs.
   - `date`: the day of the survey, as `YYYY-MM-DD` (the user's day), as facts like stars or releases hold for that day.
     It shows in grey after the title, in the markdown export, and when hovering the data version in the box about the skill.
   - `prompt`: the user's request that this table answers, in their words, to regenerate a similar table. It shows when hovering the title.
