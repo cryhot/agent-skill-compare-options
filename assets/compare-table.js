@@ -301,6 +301,10 @@
         fetching: 'Fetching the latest version…', noNewer: v => `No newer version found, v${v}`, updated: v => `Updated to v${v}`,
         fetchFailed: 'Could not fetch the latest version',
         kind: 'agent skill', description: 'Surveys and compares options before choosing anything, in any domain.',
+        shieldTips: {
+          repository: 'The repository, on GitHub', license: 'The license of the skill', release: 'The latest release of the skill',
+          stars: 'How the stars of the repository grew', jsdelivr: 'Hits per month of the view on jsDelivr, which serves it',
+        },
         repository: 'Repository', bug: 'Report a bug', feature: 'Request a feature', releases: 'Releases',
       },
       action: {
@@ -331,9 +335,10 @@
     // Two languages: the data's (DATA.lang, the table's own texts), and the view's (the texts of LOCALES).
     const dataLang = typeof DATA.lang === 'string' ? DATA.lang.trim() : '';
     const uiLang = pickLocale(dataLang);
-    // English fills what the language lacks.
-    const T = Object.fromEntries(Object.entries(LOCALES.en).map(([key, text]) => [key,
-      text && typeof text === 'object' && !Array.isArray(text) ? { ...text, ...LOCALES[uiLang][key] } : key in LOCALES[uiLang] ? LOCALES[uiLang][key] : text]));
+    // English fills what the language lacks, in the groups too.
+    const withEnglish = (english, own) => Object.fromEntries(Object.entries(english).map(([key, text]) => [key,
+      text && typeof text === 'object' && !Array.isArray(text) ? withEnglish(text, (own || {})[key]) : own && key in own ? own[key] : text]));
+    const T = withEnglish(LOCALES.en, LOCALES[uiLang]);
     // The `lang` attribute of the texts of the view, when the data speaks another language.
     const ui = dataLang && baseLang(dataLang) !== uiLang ? ` lang="${uiLang}"` : '';
     if (dataLang) root.lang = dataLang;
@@ -814,14 +819,15 @@
     // With one, the live badge has its own message and color, and the message defaults to "↗" (null for none) when it is
     // drawn; the label and the color given before `shield` in the object are forced on the live badge, the ones given
     // after it are only for the drawn one (shields.io cannot replace a live message). The logoColor and style are set for all.
+    // A badge can also have a tip, which shows on hover, for the live badge and the drawn one.
     // The sandbox of a widget does not load images from shields.io: a badge that cannot load is drawn from its
     // description, with the logos that the script has.
     const SHIELDS = [
-      { logo: 'github',   message: SLUG, color: 'darkgray', link: REPO },
-      { logo: 'github',   label: 'license', shield: `github/license/${SLUG}`,  message: 'MIT', color: '#97ca00', link: `${REPO}/blob/main/LICENSE` },
-      { logo: 'github',   label: 'release',  shield: `github/v/release/${SLUG}`, message: 'latest ↗', color: '#007ec6', link: `${REPO}/releases/latest` },
-      { logo: 'github',   label: 'stars',    shield: `github/stars/${SLUG}`, color: '#007ec6', link: `https://www.star-history.com/?repos=${encodeURIComponent(SLUG)}&releases&legend=bottom-right` },
-      { logo: 'jsDelivr', label: 'jsdelivr', shield: `jsdelivr/gh/hm/${SLUG}`, color: '#97ca00', link: `https://www.jsdelivr.com/package/gh/${SLUG}` },
+      { logo: 'github',   message: SLUG, color: 'darkgray', link: REPO, tip: T.about.shieldTips.repository },
+      { logo: 'github',   label: 'license',  shield: `github/license/${SLUG}`,   message: 'MIT',      color: '#97ca00', link: `${REPO}/blob/main/LICENSE`, tip: T.about.shieldTips.license },
+      { logo: 'github',   label: 'release',  shield: `github/v/release/${SLUG}`, message: 'latest ↗', color: '#007ec6', link: `${REPO}/releases/latest`,   tip: T.about.shieldTips.release },
+      { logo: 'github',   label: 'stars',    shield: `github/stars/${SLUG}`,   color: '#007ec6', link: `https://www.star-history.com/?repos=${encodeURIComponent(SLUG)}&releases&legend=bottom-right`, tip: T.about.shieldTips.stars },
+      { logo: 'jsDelivr', label: 'jsdelivr', shield: `jsdelivr/gh/hm/${SLUG}`, color: '#97ca00', link: `https://www.jsdelivr.com/package/gh/${SLUG}`, tip: T.about.shieldTips.jsdelivr },
     ];
     const LOGOS = { github: GITHUB_MARK };
     const shieldMessage = b => 'message' in b ? b.message : b.shield ? '↗' : undefined;
@@ -847,16 +853,17 @@
       return `https://img.shields.io/${path}?${query.join('&')}`;
     };
     // The same badge, drawn: the logo and the label on the label color, the message on the badge's.
+    const tipAttr = b => b.tip ? ` title="${escapeHtml(b.tip)}"` : '';
     const drawnBadge = b => {
       const message = shieldMessage(b);
       const parts = [
         ...(b.label || LOGOS[b.logo] ? [{ logo: LOGOS[b.logo], text: b.label, color: '#555' }] : []),
         ...(message ? [{ text: message, color: b.color || '#9f9f9f' }] : []),
       ];
-      return '<span class="ct-badge">' + parts.map(p => `<span style="background:${p.color}">${p.logo || ''}${p.text ? escapeHtml(p.text) : ''}</span>`).join('') + '</span>';
+      return `<span class="ct-badge"${tipAttr(b)}>` + parts.map(p => `<span style="background:${p.color}">${p.logo || ''}${p.text ? escapeHtml(p.text) : ''}</span>`).join('') + '</span>';
     };
     const shieldsHtml = () => '<div class="ct-shields">' + SHIELDS.map((b, i) =>
-      ((img) => b.link ? link(b.link, img) : img)(`<img class="ct-shield" data-i="${i}" alt="${escapeHtml([b.label, shieldMessage(b)].filter(Boolean).join(' '))}" src="${shieldUrl(b)}">`)).join('') + '</div>';
+      ((img) => b.link ? link(b.link, img) : img)(`<img class="ct-shield" data-i="${i}"${tipAttr(b)} alt="${escapeHtml([b.label, shieldMessage(b)].filter(Boolean).join(' '))}" src="${shieldUrl(b)}">`)).join('') + '</div>';
 
     // The box about the skill: the same box as the details, opened by the GitHub button of the hint,
     // which stays its close button (red on hover) instead of becoming a cross.
